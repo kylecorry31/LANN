@@ -1,17 +1,22 @@
 package com.kylecorry.neuralnet;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.nio.file.Files;
+
 public class Network {
 
 	public int numLayers;
 	public int numNeurons;
-	public double weights[][][];
-	private Activation functions[];
 	private Layer layers[];
 
 	public Network(int layers[], Activation functions[]) {
 		this.numLayers = layers.length;
 		this.numNeurons = Utils.sum(layers);
-		this.functions = functions;
 		this.layers = new Layer[numLayers];
 		for (int i = 0; i < numLayers; i++) {
 			if (i >= 1) {
@@ -101,4 +106,82 @@ public class Network {
 		return 0.0;
 	}
 
+	public double[][] getWeights() {
+		double weights[][] = new double[numNeurons + numLayers][numNeurons];
+		int position = 0;
+		for (int l = 0; l < numLayers; l++) {
+			for (int n = 0; n <= layers[l].numNeurons; n++) {
+				weights[position] = layers[l].neurons[n].weights;
+				position++;
+			}
+		}
+		return weights;
+	}
+
+	public void setWeights(double weights[][]) {
+		int position = 0;
+		for (int l = 0; l < numLayers; l++) {
+			for (int n = 0; n <= layers[l].numNeurons; n++) {
+				layers[l].neurons[n].weights = weights[position];
+				position++;
+			}
+		}
+	}
+
+	public void weightsToFile(String filename) {
+		PrintWriter printWriter;
+		try {
+			printWriter = new PrintWriter(filename, "UTF-8");
+			for (double[] neuron : getWeights()) {
+				for (int i = 0; i < neuron.length; i++) {
+					if (i < neuron.length - 1)
+						printWriter.print(neuron[i] + ",");
+					else
+						printWriter.print(neuron[i]);
+				}
+				printWriter.println();
+			}
+			printWriter.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public void weightsFromFile(String filename) {
+		BufferedReader br;
+		try {
+			br = new BufferedReader(new FileReader(filename));
+
+			StringBuilder sb = new StringBuilder();
+			String line = br.readLine();
+
+			while (line != null) {
+				sb.append(line);
+				sb.append(System.lineSeparator());
+				line = br.readLine();
+			}
+			br.close();
+			String everything = sb.toString();
+			String[] neurons = everything.split("\n");
+			String[][] weights = new String[neurons.length][numNeurons];
+			for (int i = 0; i < weights.length; i++) {
+				weights[i] = neurons[i].split(",");
+			}
+			double[][] dWeights = new double[neurons.length][numNeurons];
+			for (int i = 0; i < dWeights.length; i++) {
+				for (int n = 0; n < weights[i].length; n++) {
+					dWeights[i][n] = Double.valueOf(weights[i][n]);
+				}
+			}
+			setWeights(dWeights);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 }
