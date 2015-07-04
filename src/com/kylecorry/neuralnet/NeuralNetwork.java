@@ -8,13 +8,13 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 
-public class Network {
+public class NeuralNetwork {
 
 	public int numLayers;
 	public int numNeurons;
 	private Layer layers[];
 
-	public Network(int layers[], Activation functions[]) {
+	public NeuralNetwork(int layers[], Activation functions[]) {
 		this.numLayers = layers.length;
 		this.numNeurons = Utils.sum(layers);
 		this.layers = new Layer[numLayers];
@@ -70,8 +70,26 @@ public class Network {
 		return output;
 	}
 
-	public double train(double input[][], double output[][]) {
+	public double train(double input[][], double output[][], int epochs) {
+		double error = 0;
+		for (int i = 0; i < epochs; i++)
+			error = train(input, output);
+		return error;
+	}
 
+	public double train(double input[][], double output[][], int epochs,
+			double acceptableError) {
+		double error = 0;
+		for (int i = 0; i < epochs; i++) {
+			error = train(input, output);
+			if (error <= acceptableError)
+				break;
+		}
+		return error;
+	}
+
+	public double train(double input[][], double output[][]) {
+		double totalError = 0;
 		// calculate overall net error
 		for (int i = 0; i < input.length; i++) {
 			double error = 0;
@@ -101,9 +119,10 @@ public class Network {
 					layers[l].neurons[n].updateInputWeights(layers[l - 1]);
 				}
 			}
+			totalError += error;
 
 		}
-		return 0.0;
+		return totalError;
 	}
 
 	public double[][] getWeights() {
@@ -183,5 +202,13 @@ public class Network {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public double[] classify(double input[]) {
+		double[] output = this.activate(input);
+		for (int i = 0; i < output.length; i++) {
+			output[i] = Math.round(output[i]);
+		}
+		return output;
 	}
 }
