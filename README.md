@@ -1,4 +1,4 @@
-# Artificial-Neural-Network
+# Kynet - Lightweight Artificial Neural Network Library
 
 A lightweight implementation of an artificial neural network (feed-forward multi-layer perceptron neural network to be exact).
 
