@@ -1,9 +1,19 @@
 # Artificial-Neural-Network
-===========================
 
 A lightweight implementation of an artificial neural network (feed-forward multi-layer perceptron neural network to be exact).
 
 This is a very simple library to use in your projects! It has very user friendly functions and allows for a neural network to be created very quickly and efficiently.
+
+Getting Started
+===============
+
+Only three simple steps to get started!
+
+1. Download [this .jar file](ArtificialNeuralNetwork-Kyle.jar?raw=true) and add it to your build path of your Java project. (Supports JDK 1.6+)
+
+2. Create a NeuralNetwork object and train it as seen in the example below.
+
+3. Use your neural network!
 
 Example
 =======
@@ -68,4 +78,4 @@ public class Test {
 
 ```
 
-To get started download [this .jar file](ArtificialNeuralNetwork-Kyle.jar?raw=true) and add it to your build path of your Java project. (Supports JDK 1.6+)
+
