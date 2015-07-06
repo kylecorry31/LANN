@@ -26,6 +26,7 @@ public class Test {
 	  	// A neural network to tell me if I should go hiking based on the weather.
 
 		// Create a neural network with 7 input neurons, 10 hidden neurons and 1 output neurons (Sigmoid)
+		// In most cases the first layer will use the linear activation function.
 		NeuralNetwork net = new NeuralNetwork(new int[] { 7, 10, 1 },
 				new Activation[] { new Linear(), new Sigmoid(), new Sigmoid() });
 
