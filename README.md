@@ -68,4 +68,4 @@ public class Test {
 
 ```
 
-To get started download this .jar file and add it to your build path of your Java project. (Supports JDK 1.6+)
+To get started download [this .jar file](ArtificialNeuralNetwork-Kyle.jar) and add it to your build path of your Java project. (Supports JDK 1.6+)
