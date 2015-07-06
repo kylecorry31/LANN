@@ -1,4 +1,4 @@
-package com.kylecorry.neuralnet;
+package com.kylecorry.kynet;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;

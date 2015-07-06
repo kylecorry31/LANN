@@ -1,4 +1,4 @@
-package com.kylecorry.neuralnet;
+package com.kylecorry.kynet;
 
 public class Softplus extends Activation {
 
