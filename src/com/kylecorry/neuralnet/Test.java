@@ -1,26 +1,10 @@
 package com.kylecorry.neuralnet;
 
-import java.util.Scanner;
-
 public class Test {
 
 	public static void main(String[] args) {
-		// NeuralNetwork net = new NeuralNetwork(
-		// new int[] { 1, 6, 1 },
-		// new Activation[] { new Linear(), new Sigmoid(), new Softplus() });
-		// double input[][] = new double[][] { { 0.760 }, { 0.600 }, { 0.475 },
-		// { 0.774 }, { 0.761 } };
-		// double output[][] = new double[][] { { 68. }, { 72. }, { 81. },
-		// { 66. }, { 67. } };
-		// //System.out.println(net.train(input, output, 5000, 0.001));
-		// //net.weightsToFile("temperature.csv");
-		// net.weightsFromFile("temperature.csv");
-		// System.out.println(net.test(new double[][] { { 0.710 }, { 0.610 } },
-		// new double[][] { { 69.5 }, { 72.1 } }));
-		// System.out.println(net.activate(new double[]{0.475})[0]);
 
-		NeuralNetwork net = new NeuralNetwork(
-				new int[] { 7, 10, 1 },
+		NeuralNetwork net = new NeuralNetwork(new int[] { 7, 10, 1 },
 				new Activation[] { new Linear(), new Sigmoid(), new Sigmoid() });
 
 		double input[][] = new double[][] {
@@ -48,7 +32,7 @@ public class Test {
 		double output[][] = new double[][] { { 1 }, { 1 }, { 0 }, { 0 }, { 0 },
 				{ 0 }, { 1 }, { 0 }, { 1 }, { 0 } };
 		System.out.println(net.train(input, output, 200, 0.01));
-		//net.weightsToFile("hike.csv");
+		net.weightsToFile("hike.csv");
 		System.out.println(net.test(new double[][] {
 				{ 82.81, 65 / 100., 1015, 81.14, 62.08, 985.59 / 1013.25,
 						46 / 100. },
