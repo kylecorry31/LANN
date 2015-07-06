@@ -8,7 +8,7 @@ public class Softplus extends Activation {
 	}
 
 	@Override
-	public double derivitive(double x) {
+	public double derivative(double x) {
 		return 1d / (1 + Math.pow(Math.E, -x));
 	}
 

@@ -8,7 +8,7 @@ public class Binary extends Activation {
 	}
 
 	@Override
-	public double derivitive(double x) {
+	public double derivative(double x) {
 		return 0;
 	}
 

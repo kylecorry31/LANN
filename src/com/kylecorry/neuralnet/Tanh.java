@@ -8,7 +8,7 @@ public class Tanh extends Activation {
 	}
 
 	@Override
-	public double derivitive(double x) {
+	public double derivative(double x) {
 		// TODO Auto-generated method stub
 		return 1 - Math.pow(Math.tanh(x), 2);
 	}

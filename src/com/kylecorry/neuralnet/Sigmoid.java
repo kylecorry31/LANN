@@ -8,7 +8,7 @@ public class Sigmoid extends Activation {
 	}
 
 	@Override
-	public double derivitive(double x) {
+	public double derivative(double x) {
 		return activate(x) * (1 - activate(x));
 	}
 

@@ -8,7 +8,7 @@ public class ReLU extends Activation {
 	}
 
 	@Override
-	public double derivitive(double x) {
+	public double derivative(double x) {
 		return x > 0 ? 1 : 0;
 	}
 

@@ -14,7 +14,20 @@ public class NeuralNetwork {
 	public int numNeurons;
 	private Layer layers[];
 
+	/**
+	 * A representation of a Feed-Forward neural network.
+	 * 
+	 * @param layers
+	 *            An array of integers where the length indicates the number of
+	 *            layers and the value indicates the number of neurons at the
+	 *            layer with the value's index.
+	 * @param functions
+	 *            An array of Activation functions where the function at each
+	 *            index indicates the activation function that the layer will
+	 *            use.
+	 */
 	public NeuralNetwork(int layers[], Activation functions[]) {
+		assert (layers.length == functions.length);
 		this.numLayers = layers.length;
 		this.numNeurons = Utils.sum(layers);
 		this.layers = new Layer[numLayers];
@@ -29,6 +42,15 @@ public class NeuralNetwork {
 		}
 	}
 
+	/**
+	 * Generates a set of random weights.
+	 * 
+	 * @param i
+	 *            Number of neurons in current layer
+	 * @param prevLayer
+	 *            The previous layer
+	 * @return A set of random weights for the current layer
+	 */
 	private double[][] getRandomWeights(int i, Layer prevLayer) {
 		double weights[][] = new double[i][prevLayer.numNeurons + 1];
 		for (int j = 0; j < i; j++) {
@@ -39,6 +61,13 @@ public class NeuralNetwork {
 		return weights;
 	}
 
+	/**
+	 * Generates a weights set consisting of only 1s (for input layer).
+	 * 
+	 * @param i
+	 *            Number of neurons in the input layer.
+	 * @return A set of weights equal to 1 for the current layer.
+	 */
 	private double[][] getOnes(int i) {
 		double weights[][] = new double[i][1];
 		for (int j = 0; j < i; j++) {
@@ -47,7 +76,19 @@ public class NeuralNetwork {
 		return weights;
 	}
 
+	/**
+	 * Given an input the neural network will return a prediction for the output
+	 * based on its training.
+	 * 
+	 * @param input
+	 *            The input to the neural network which is equal in size to the
+	 *            number of input neurons.
+	 * @return The output of the neural network or an empty array if input size
+	 *         does not equal the length of the first layer.
+	 */
 	public double[] activate(double input[]) {
+		if (layers[0].numNeurons != input.length)
+			return new double[] {};
 		for (int i = 0; i < layers[0].numNeurons; i++) {
 			layers[0].neurons[i].input = input[i];
 			layers[0].neurons[i].activate();
@@ -70,15 +111,43 @@ public class NeuralNetwork {
 		return output;
 	}
 
+	/**
+	 * Trains the weights of the neural network to predict an output given an
+	 * input.
+	 * 
+	 * @param input
+	 *            The input to the neural network.
+	 * @param output
+	 *            The target output for the given input.
+	 * @param epochs
+	 *            The number of training cycles.
+	 * @return The error of the network as an accumulated RMS.
+	 */
 	public double train(double input[][], double output[][], int epochs) {
+		assert (input.length != output.length);
 		double error = 0;
 		for (int i = 0; i < epochs; i++)
 			error = train(input, output);
 		return error;
 	}
 
+	/**
+	 * Trains the weights of the neural network to predict an output given an
+	 * input.
+	 * 
+	 * @param input
+	 *            The input to the neural network.
+	 * @param output
+	 *            The target output for the given input.
+	 * @param epochs
+	 *            The maximum number of training cycles.
+	 * @param acceptableError
+	 *            The amount of error at which to stop training.
+	 * @return The error of the network as an accumulated RMS.
+	 */
 	public double train(double input[][], double output[][], int epochs,
 			double acceptableError) {
+		assert (input.length != output.length);
 		double error = 0;
 		for (int i = 0; i < epochs; i++) {
 			error = train(input, output);
@@ -88,7 +157,18 @@ public class NeuralNetwork {
 		return error;
 	}
 
+	/**
+	 * Trains the weights of the neural network for 1 epoch to predict an output
+	 * given an input.
+	 * 
+	 * @param input
+	 *            The input to the neural network.
+	 * @param output
+	 *            The target output for the given input.
+	 * @return The error of the network as an accumulated RMS.
+	 */
 	public double train(double input[][], double output[][]) {
+		assert (input.length != output.length);
 		double totalError = 0;
 		// calculate overall net error
 		for (int i = 0; i < input.length; i++) {
@@ -125,6 +205,11 @@ public class NeuralNetwork {
 		return totalError;
 	}
 
+	/**
+	 * Get the current weights of the network connection.
+	 * 
+	 * @return The current weights of the network connections.
+	 */
 	public double[][] getWeights() {
 		double weights[][] = new double[numNeurons + numLayers][numNeurons];
 		int position = 0;
@@ -137,6 +222,12 @@ public class NeuralNetwork {
 		return weights;
 	}
 
+	/**
+	 * Sets the weights of the network connection.
+	 * 
+	 * @param weights
+	 *            The new weights of the network.
+	 */
 	public void setWeights(double weights[][]) {
 		int position = 0;
 		for (int l = 0; l < numLayers; l++) {
@@ -147,6 +238,12 @@ public class NeuralNetwork {
 		}
 	}
 
+	/**
+	 * Prints the weights to a file (CSV).
+	 * 
+	 * @param filename
+	 *            The filename in which to save the weights to.
+	 */
 	public void weightsToFile(String filename) {
 		PrintWriter printWriter;
 		try {
@@ -170,6 +267,12 @@ public class NeuralNetwork {
 		}
 	}
 
+	/**
+	 * Sets the network's weights to the weights present in a file.
+	 * 
+	 * @param filename
+	 *            The name of the file to retrieve the weights from.
+	 */
 	public void weightsFromFile(String filename) {
 		BufferedReader br;
 		try {
@@ -204,6 +307,13 @@ public class NeuralNetwork {
 		}
 	}
 
+	/**
+	 * Rounds the output of a Sigmoid output layer to the nearest whole number.
+	 * 
+	 * @param input
+	 *            The input of the neural network.
+	 * @return The output of the neural network with integer values.
+	 */
 	public double[] classify(double input[]) {
 		double[] output = this.activate(input);
 		for (int i = 0; i < output.length; i++) {
@@ -212,7 +322,17 @@ public class NeuralNetwork {
 		return output;
 	}
 
+	/**
+	 * Test the neural network on a testing set.
+	 * 
+	 * @param input
+	 *            The input to the neural network.
+	 * @param output
+	 *            The target output for the given input.
+	 * @return The error of the network as an accumulated RMS.
+	 */
 	public double test(double input[][], double output[][]) {
+		assert (input.length != output.length);
 		double totalError = 0.0;
 		for (int i = 0; i < input.length; i++) {
 			double error = 0.0;
