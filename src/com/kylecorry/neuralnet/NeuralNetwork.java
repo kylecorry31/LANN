@@ -211,4 +211,19 @@ public class NeuralNetwork {
 		}
 		return output;
 	}
+
+	public double test(double input[][], double output[][]) {
+		double totalError = 0.0;
+		for (int i = 0; i < input.length; i++) {
+			double error = 0.0;
+			double newOutput[] = activate(input[i]);
+			for (int j = 0; j < output[i].length; j++) {
+				error += Math.pow(newOutput[j] - output[i][j], 2);
+			}
+			error /= output.length;
+			error = Math.sqrt(error);
+			totalError += error;
+		}
+		return totalError;
+	}
 }

@@ -1,19 +1,58 @@
 package com.kylecorry.neuralnet;
 
+import java.util.Scanner;
+
 public class Test {
 
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		NeuralNetwork net = new NeuralNetwork(new int[] { 1, 4, 1 },
-				new Activation[] { new Linear(), new Sigmoid(), new Softplus() });
-		double input[][] = new double[][] { { 0.760 }, { 0.600 }, { 0.475 },
-				{ 0.774 }, { 0.761 } };
-		double output[][] = new double[][] { { 68. }, { 72. }, { 81. },
-				{ 66. }, { 67. } };
-		//net.train(input, output, 200, 0.001);
-		//net.weightsToFile("temperature.csv");
-		net.weightsFromFile("temperature.csv");
-		System.out.println(net.activate(new double[]{.761})[0]);
-	}
+		// NeuralNetwork net = new NeuralNetwork(
+		// new int[] { 1, 6, 1 },
+		// new Activation[] { new Linear(), new Sigmoid(), new Softplus() });
+		// double input[][] = new double[][] { { 0.760 }, { 0.600 }, { 0.475 },
+		// { 0.774 }, { 0.761 } };
+		// double output[][] = new double[][] { { 68. }, { 72. }, { 81. },
+		// { 66. }, { 67. } };
+		// //System.out.println(net.train(input, output, 5000, 0.001));
+		// //net.weightsToFile("temperature.csv");
+		// net.weightsFromFile("temperature.csv");
+		// System.out.println(net.test(new double[][] { { 0.710 }, { 0.610 } },
+		// new double[][] { { 69.5 }, { 72.1 } }));
+		// System.out.println(net.activate(new double[]{0.475})[0]);
 
+		NeuralNetwork net = new NeuralNetwork(
+				new int[] { 7, 10, 1 },
+				new Activation[] { new Linear(), new Sigmoid(), new Sigmoid() });
+
+		double input[][] = new double[][] {
+				{ 67.08, 59 / 100., 1019, 75.94, 60.24, 1013.94 / 1013.25,
+						62 / 100. },
+				{ 69.84, 46 / 100., 1023.26 / 1013.25, 79.7, 62.11, 1012.57,
+						51 / 100. },
+				{ 68.43, 83 / 100., 1014.31, 79.43, 61.03, 1005.16 / 1013.25,
+						73 / 100. },
+				{ 72.57, 50 / 100., 1025.41 / 1013.25, 81.61, 62.46, 1014.79,
+						65 / 100. },
+				{ 69.25, 99 / 100., 1009.1 / 1013.25, 76.44, 69.26, 999.05,
+						99 / 100. },
+				{ 76.89, 65 / 100., 1013.45, 75.94, 70.63, 1002.19 / 1013.25,
+						72 / 100. },
+				{ 76.44, 44 / 100., 1017, 78.35, 62.35, 1009.5 / 1013.25,
+						56 / 100. },
+				{ 64.71, 59 / 100., 1022, 71.37, 60.03, 1012.98 / 1013.25,
+						60 / 100. },
+				{ 72.41, 56 / 100., 1013, 82.17, 71.76, 1006.71 / 1013.25,
+						60 / 100. },
+				{ 80.94, 47 / 100., 1022, 84.99, 73.51, 1016.15 / 1013.25,
+						66 / 100. } };
+
+		double output[][] = new double[][] { { 1 }, { 1 }, { 0 }, { 0 }, { 0 },
+				{ 0 }, { 1 }, { 0 }, { 1 }, { 0 } };
+		System.out.println(net.train(input, output, 200, 0.01));
+		//net.weightsToFile("hike.csv");
+		System.out.println(net.test(new double[][] {
+				{ 82.81, 65 / 100., 1015, 81.14, 62.08, 985.59 / 1013.25,
+						46 / 100. },
+				{ 86.63, 51 / 100., 1016.7 / 1013.25, 89.74, 85.32, 1022.23,
+						82 / 100. } }, new double[][] { { 0.0 }, { 1 } }));
+	}
 }
