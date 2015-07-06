@@ -1,4 +1,4 @@
-# Artificial-Neural-Network
+# Artificial Neural Network
 
 A lightweight implementation of an artificial neural network (feed-forward multi-layer perceptron neural network to be exact).
 
