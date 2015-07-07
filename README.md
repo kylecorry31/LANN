@@ -11,7 +11,7 @@ Getting Started
 
 Only three simple steps to get started!
 
-1. Download [this .jar file](ArtificialNeuralNetwork-Kyle.jar?raw=true) and add it to your build path of your Java project. (Supports JDK 1.6+)
+1. Download the .jar file from the [releases page](https://github.com/kylecorry31/Kynet/releases) and add it to your build path of your Java project. (Supports JDK 1.6+)
 
 2. Create a NeuralNetwork object and train it as seen in the example below.
 
