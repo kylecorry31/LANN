@@ -126,8 +126,10 @@ public class NeuralNetwork {
 	public double train(double input[][], double output[][], int epochs) {
 		assert (input.length != output.length);
 		double error = 0;
-		for (int i = 0; i < epochs; i++)
+		for (int i = 0; i < epochs; i++){
 			error = train(input, output);
+			System.out.println((i + 1) + " -- " + error);
+		}
 		return error;
 	}
 
@@ -151,6 +153,7 @@ public class NeuralNetwork {
 		double error = 0;
 		for (int i = 0; i < epochs; i++) {
 			error = train(input, output);
+			System.out.println((i + 1) + " -- " + error);
 			if (error <= acceptableError)
 				break;
 		}
