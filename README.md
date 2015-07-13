@@ -1,6 +1,6 @@
 # Kynet - Lightweight Artificial Neural Network Library
 
-![Kynet Image](http://kylecorry31.github.io/kynet.png)
+![Kynet Image](http://kylecorry31.github.io/res/images/kynet.jpg)
 
 A lightweight implementation of an artificial neural network (feed-forward multi-layer perceptron neural network to be exact).
 
