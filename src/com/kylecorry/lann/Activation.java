@@ -1,4 +1,4 @@
-package com.kylecorry.kynet;
+package com.kylecorry.lann;
 
 public abstract class Activation {
 	/**

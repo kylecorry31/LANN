@@ -1,4 +1,4 @@
-package com.kylecorry.kynet;
+package com.kylecorry.lann;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;

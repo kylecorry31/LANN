@@ -1,17 +1,16 @@
-package com.kylecorry.kynet;
+package com.kylecorry.lann;
 
-public class Linear extends Activation {
+public class LeakyReLU extends Activation {
 
 	@Override
 	public double activate(double x) {
-
-		return x;
+		return x > 0 ? x : 0.01 * x;
 	}
 
 	@Override
 	public double derivative(double x) {
 		// TODO Auto-generated method stub
-		return 1;
+		return x > 0 ? 1 : 0.01;
 	}
 
 }
