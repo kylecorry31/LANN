@@ -1,5 +1,6 @@
 *.class
 *.csv
+*.jar
 
 *.pydevproject
 .metadata
