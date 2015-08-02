@@ -1,5 +1,7 @@
 # LANN - Lightweight Artificial Neural Network Library
 
+![LANN](http://kylecorry31.github.io/res/images/LANN.jpg)
+
 A lightweight implementation of an artificial neural network (feed-forward multi-layer perceptron neural network to be exact).
 
 This is a very simple library to use in your projects! It has very user friendly functions and allows for a neural network to be created very quickly and efficiently.
