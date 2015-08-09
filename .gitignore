@@ -11,6 +11,8 @@ tmp/
 local.properties
 .settings/
 .loadpath
+*.csv
+*.jar
 
 # Eclipse Core
 .project
