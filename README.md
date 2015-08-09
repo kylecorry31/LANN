@@ -54,7 +54,7 @@ Download the .jar file from the [releases page](https://github.com/kylecorry31/K
 		System.out.println(net.train(input, output, 200, 0.01));
 		
 		// Save
-		net.weightsToFile("hike.csv");
+		net.save("hike.csv");
 		
 		// Predict
 		System.out.println(net.predict(
