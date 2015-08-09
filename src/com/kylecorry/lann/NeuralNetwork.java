@@ -6,7 +6,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.nio.file.Files;
 
 public class NeuralNetwork {
 
@@ -112,6 +111,20 @@ public class NeuralNetwork {
 	}
 
 	/**
+	 * Given an input the neural network will return a prediction for the output
+	 * based on its training.
+	 * 
+	 * @param input
+	 *            The input to the neural network which is equal in size to the
+	 *            number of input neurons.
+	 * @return The output of the neural network or an empty array if input size
+	 *         does not equal the length of the first layer.
+	 */
+	public double[] predict(double input[]) {
+		return activate(input);
+	}
+
+	/**
 	 * Trains the weights of the neural network to predict an output given an
 	 * input.
 	 * 
@@ -126,7 +139,7 @@ public class NeuralNetwork {
 	public double train(double input[][], double output[][], int epochs) {
 		assert (input.length != output.length);
 		double error = 0;
-		for (int i = 0; i < epochs; i++){
+		for (int i = 0; i < epochs; i++) {
 			error = train(input, output);
 			System.out.println((i + 1) + " -- " + error);
 		}
