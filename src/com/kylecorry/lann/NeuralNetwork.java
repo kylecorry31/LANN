@@ -76,8 +76,7 @@ public class NeuralNetwork {
 	}
 
 	/**
-	 * Given an input the neural network will return a prediction for the output
-	 * based on its training.
+	 * Give a prediction based on some input.
 	 * 
 	 * @param input
 	 *            The input to the neural network which is equal in size to the
@@ -91,8 +90,7 @@ public class NeuralNetwork {
 	}
 
 	/**
-	 * Given an input the neural network will return a prediction for the output
-	 * based on its training.
+	 * Give a prediction based on some input.
 	 * 
 	 * @param input
 	 *            The input to the neural network which is equal in size to the
@@ -126,8 +124,7 @@ public class NeuralNetwork {
 	}
 
 	/**
-	 * Trains the weights of the neural network to predict an output given an
-	 * input.
+	 * Train the neural network to predict an output given some input.
 	 * 
 	 * @param input
 	 *            The input to the neural network.
@@ -148,8 +145,7 @@ public class NeuralNetwork {
 	}
 
 	/**
-	 * Trains the weights of the neural network to predict an output given an
-	 * input.
+	 * Train the neural network to predict an output given some input.
 	 * 
 	 * @param input
 	 *            The input to the neural network.
@@ -175,8 +171,7 @@ public class NeuralNetwork {
 	}
 
 	/**
-	 * Trains the weights of the neural network for 1 epoch to predict an output
-	 * given an input.
+	 * Train the neural network to predict an output given some input.
 	 * 
 	 * @param input
 	 *            The input to the neural network.
@@ -223,7 +218,7 @@ public class NeuralNetwork {
 	}
 
 	/**
-	 * Get the current weights of the network connection.
+	 * Get the current weights of the network's connections.
 	 * 
 	 * @return The current weights of the network connections.
 	 */
@@ -240,7 +235,7 @@ public class NeuralNetwork {
 	}
 
 	/**
-	 * Sets the weights of the network connection.
+	 * Sets the weights of the network's connections.
 	 * 
 	 * @param weights
 	 *            The new weights of the network.
@@ -256,12 +251,12 @@ public class NeuralNetwork {
 	}
 
 	/**
-	 * Prints the weights to a file (CSV).
+	 * Saves the neural network to a file (CSV).
 	 * 
 	 * @param filename
 	 *            The filename in which to save the weights to.
 	 */
-	public void weightsToFile(String filename) {
+	public void save(String filename) {
 		PrintWriter printWriter;
 		try {
 			printWriter = new PrintWriter(filename, "UTF-8");
@@ -285,12 +280,12 @@ public class NeuralNetwork {
 	}
 
 	/**
-	 * Sets the network's weights to the weights present in a file.
+	 * Loads a neural network from a file.
 	 * 
 	 * @param filename
 	 *            The name of the file to retrieve the weights from.
 	 */
-	public void weightsFromFile(String filename) {
+	public void load(String filename) {
 		BufferedReader br;
 		try {
 			br = new BufferedReader(new FileReader(filename));
@@ -332,7 +327,7 @@ public class NeuralNetwork {
 	 * @return The output of the neural network with integer values.
 	 */
 	public double[] classify(double input[]) {
-		double[] output = this.activate(input);
+		double[] output = this.predict(input);
 		for (int i = 0; i < output.length; i++) {
 			output[i] = Math.round(output[i]);
 		}
@@ -353,7 +348,7 @@ public class NeuralNetwork {
 		double totalError = 0.0;
 		for (int i = 0; i < input.length; i++) {
 			double error = 0.0;
-			double newOutput[] = activate(input[i]);
+			double newOutput[] = predict(input[i]);
 			for (int j = 0; j < output[i].length; j++) {
 				error += Math.pow(newOutput[j] - output[i][j], 2);
 			}
