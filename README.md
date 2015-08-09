@@ -20,7 +20,7 @@ Download the .jar file from the [releases page](https://github.com/kylecorry31/K
 
 ```java
 		// Create
-		NeuralNetwork net = new NeuralNetwork( 7, 10, 1);
+		NeuralNetwork net = new NeuralNetwork(7, 10, 1);
 
 		// Training input
 		double input[][] = new double[][] {
