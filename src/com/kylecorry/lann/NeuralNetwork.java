@@ -42,6 +42,43 @@ public class NeuralNetwork {
 	}
 
 	/**
+	 * Represents a Feed-Forward neural network.
+	 * 
+	 * Uses Linear, Sigmoid, Sigmoid as layers.
+	 * 
+	 * @param numInput
+	 *            The number of inputs.
+	 * @param numHidden
+	 *            The number of hidden neurons.
+	 * @param numOutput
+	 *            The number of outputs.
+	 */
+	public NeuralNetwork(int numInput, int numHidden, int numOutput) {
+		this(new int[] { numInput, numHidden, numOutput }, new Activation[] {
+				new Linear(), new Sigmoid(), new Sigmoid() });
+	}
+
+	/**
+	 * Represents a Feed-Forward neural network.
+	 * 
+	 * Uses Linear, Sigmoid as the input and hidden layers.
+	 * 
+	 * @param numInput
+	 *            The number of inputs.
+	 * @param numHidden
+	 *            The number of hidden neurons.
+	 * @param numOutput
+	 *            The number of outputs.
+	 * @param outputFunction
+	 *            The activation function of the output layer.
+	 */
+	public NeuralNetwork(int numInput, int numHidden, int numOutput,
+			Activation outputFunction) {
+		this(new int[] { numInput, numHidden, numOutput }, new Activation[] {
+				new Linear(), new Sigmoid(), outputFunction });
+	}
+
+	/**
 	 * Generates a set of random weights.
 	 * 
 	 * @param i
