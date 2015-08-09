@@ -58,7 +58,7 @@ Download the .jar file from the [releases page](https://github.com/kylecorry31/K
 		
 		// Predict
 		System.out.println(net.activate(
-		    new double[] { 82.81, 65 / 100., 1015, 81.14, 62.08, 985.59 / 1013.25, 46 / 100.}
+		    new double[] { 82.81, 65 / 100., 1015 / 1013.25, 81.14, 62.08, 985.59 / 1013.25, 46 / 100.}
 		));
 
 ```
