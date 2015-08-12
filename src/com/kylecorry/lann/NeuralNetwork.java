@@ -121,20 +121,6 @@ public class NeuralNetwork {
 	 * @return The output of the neural network or an empty array if input size
 	 *         does not equal the length of the first layer.
 	 */
-	@Deprecated
-	public double[] activate(double input[]) {
-		return predict(input);
-	}
-
-	/**
-	 * Give a prediction based on some input.
-	 * 
-	 * @param input
-	 *            The input to the neural network which is equal in size to the
-	 *            number of input neurons.
-	 * @return The output of the neural network or an empty array if input size
-	 *         does not equal the length of the first layer.
-	 */
 	public double[] predict(double input[]) {
 		if (layers[0].numNeurons != input.length)
 			return new double[] {};
@@ -222,7 +208,7 @@ public class NeuralNetwork {
 		// calculate overall net error
 		for (int i = 0; i < input.length; i++) {
 			double error = 0;
-			double[] netOut = this.activate(input[i]);
+			double[] netOut = this.predict(input[i]);
 			// double[] outputError = new double[netOut.length];
 			for (int j = 0; j < netOut.length; j++) {
 				error += Math.pow(output[i][j] - netOut[j], 2);
