@@ -13,8 +13,8 @@ import com.kylecorry.lann.activation.Sigmoid;
 
 public class NeuralNetwork {
 
-	public int numLayers;
-	public int numNeurons;
+	private int numLayers;
+	private int numNeurons;
 	private Layer layers[];
 
 	/**
@@ -30,17 +30,15 @@ public class NeuralNetwork {
 	 *            use.
 	 */
 	public NeuralNetwork(int layers[], Activation functions[]) {
-		assert (layers.length == functions.length);
+		assert(layers.length == functions.length);
 		this.numLayers = layers.length;
 		this.numNeurons = Utils.sum(layers);
 		this.layers = new Layer[numLayers];
 		for (int i = 0; i < numLayers; i++) {
 			if (i >= 1) {
-				this.layers[i] = new Layer(layers[i], functions[i],
-						getRandomWeights(layers[i], this.layers[i - 1]));
+				this.layers[i] = new Layer(layers[i], functions[i], getRandomWeights(layers[i], this.layers[i - 1]));
 			} else {
-				this.layers[i] = new Layer(layers[i], functions[i],
-						getOnes(layers[i]));
+				this.layers[i] = new Layer(layers[i], functions[i], getOnes(layers[i]));
 			}
 		}
 	}
@@ -58,8 +56,8 @@ public class NeuralNetwork {
 	 *            The number of outputs.
 	 */
 	public NeuralNetwork(int numInput, int numHidden, int numOutput) {
-		this(new int[] { numInput, numHidden, numOutput }, new Activation[] {
-				new Linear(), new Sigmoid(), new Sigmoid() });
+		this(new int[] { numInput, numHidden, numOutput },
+				new Activation[] { new Linear(), new Sigmoid(), new Sigmoid() });
 	}
 
 	/**
@@ -76,10 +74,28 @@ public class NeuralNetwork {
 	 * @param outputFunction
 	 *            The activation function of the output layer.
 	 */
-	public NeuralNetwork(int numInput, int numHidden, int numOutput,
-			Activation outputFunction) {
-		this(new int[] { numInput, numHidden, numOutput }, new Activation[] {
-				new Linear(), new Sigmoid(), outputFunction });
+	public NeuralNetwork(int numInput, int numHidden, int numOutput, Activation outputFunction) {
+		this(new int[] { numInput, numHidden, numOutput },
+				new Activation[] { new Linear(), new Sigmoid(), outputFunction });
+	}
+
+	/**
+	 * The number of layers in the neural network including the input and
+	 * output.
+	 * 
+	 * @return The total number of layers in the neural network.
+	 */
+	public int length() {
+		return numLayers;
+	}
+
+	/**
+	 * The number of neurons in the neural network.
+	 * 
+	 * @return The total number of neurons in the neural network.
+	 */
+	public int getNumNeurons() {
+		return numNeurons;
 	}
 
 	/**
@@ -136,8 +152,7 @@ public class NeuralNetwork {
 			for (int n = 0; n < layers[i].numNeurons; n++) {
 				layers[i].neurons[n].input = 0;
 				for (int j = 0; j <= layers[i - 1].numNeurons; j++) {
-					layers[i].neurons[n].input += layers[i - 1].neurons[j].output
-							* layers[i].neurons[n].weights[j];
+					layers[i].neurons[n].input += layers[i - 1].neurons[j].output * layers[i].neurons[n].weights[j];
 				}
 				layers[i].neurons[n].activate();
 			}
@@ -162,7 +177,7 @@ public class NeuralNetwork {
 	 * @return The error of the network as an accumulated RMS.
 	 */
 	public double train(double input[][], double output[][], int epochs) {
-		assert (input.length != output.length);
+		assert(input.length != output.length);
 		double error = 0;
 		for (int i = 0; i < epochs; i++) {
 			error = train(input, output);
@@ -184,9 +199,8 @@ public class NeuralNetwork {
 	 *            The amount of error at which to stop training.
 	 * @return The error of the network as an accumulated RMS.
 	 */
-	public double train(double input[][], double output[][], int epochs,
-			double acceptableError) {
-		assert (input.length != output.length);
+	public double train(double input[][], double output[][], int epochs, double acceptableError) {
+		assert(input.length != output.length);
 		double error = 0;
 		for (int i = 0; i < epochs; i++) {
 			error = train(input, output);
@@ -207,7 +221,7 @@ public class NeuralNetwork {
 	 * @return The error of the network as an accumulated RMS.
 	 */
 	public double train(double input[][], double output[][]) {
-		assert (input.length != output.length);
+		assert(input.length != output.length);
 		double totalError = 0;
 		// calculate overall net error
 		for (int i = 0; i < input.length; i++) {
@@ -221,8 +235,7 @@ public class NeuralNetwork {
 			error = Math.sqrt(error);
 
 			for (int n = 0; n < layers[numLayers - 1].numNeurons; n++) {
-				layers[numLayers - 1].neurons[n]
-						.calcOutputGradients(output[i][n]);
+				layers[numLayers - 1].neurons[n].calcOutputGradients(output[i][n]);
 			}
 
 			for (int l = numLayers - 2; l > 0; l--) {
@@ -371,7 +384,7 @@ public class NeuralNetwork {
 	 * @return The error of the network as an accumulated RMS.
 	 */
 	public double test(double input[][], double output[][]) {
-		assert (input.length != output.length);
+		assert(input.length != output.length);
 		double totalError = 0.0;
 		for (int i = 0; i < input.length; i++) {
 			double error = 0.0;

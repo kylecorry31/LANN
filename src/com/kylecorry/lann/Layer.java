@@ -2,12 +2,12 @@ package com.kylecorry.lann;
 
 import com.kylecorry.lann.activation.Activation;
 
-public class Layer {
+class Layer {
 
-	public int numNeurons;
+	int numNeurons;
 	private Activation function;
-	public double weights[][];
-	public Neuron neurons[];
+	double weights[][];
+	Neuron neurons[];
 
 	/**
 	 * Represents a layer in a neural network.
@@ -19,7 +19,7 @@ public class Layer {
 	 * @param weights
 	 *            The weights for each neuron in this layer.
 	 */
-	public Layer(int numNeurons, Activation function, double weights[][]) {
+	Layer(int numNeurons, Activation function, double weights[][]) {
 		assert (weights.length == numNeurons);
 		this.numNeurons = numNeurons;
 		this.function = function;

@@ -2,7 +2,7 @@ package com.kylecorry.lann;
 
 import com.kylecorry.lann.activation.Activation;
 
-public class Neuron {
+class Neuron {
 	public double output;
 	public double input;
 	public double weights[];
@@ -23,7 +23,7 @@ public class Neuron {
 	 * @param function
 	 *            The activation function of the neuron.
 	 */
-	public Neuron(double weights[], double output, Activation function) {
+	Neuron(double weights[], double output, Activation function) {
 		this.weights = weights;
 		this.output = output;
 		this.function = function;
@@ -34,7 +34,7 @@ public class Neuron {
 	 * Sets the output of the neuron to the value of its activation function
 	 * with the input to the neuron.
 	 */
-	public void activate() {
+	void activate() {
 		output = function.activate(input);
 	}
 
@@ -44,7 +44,7 @@ public class Neuron {
 	 * @param target
 	 *            The target value of the neural network.
 	 */
-	public void calcOutputGradients(double target) {
+	void calcOutputGradients(double target) {
 		double delta = target - output;
 		gradient = delta * function.derivative(output);
 
@@ -75,7 +75,7 @@ public class Neuron {
 	 * @param neuronNum
 	 *            The index of this neuron in its layer.
 	 */
-	public void calcHiddenGradients(Layer nextLayer, int neuronNum) {
+	void calcHiddenGradients(Layer nextLayer, int neuronNum) {
 		double dow = sumDOW(nextLayer, neuronNum);
 		gradient = dow * function.derivative(output);
 	}
@@ -86,7 +86,7 @@ public class Neuron {
 	 * @param prevLayer
 	 *            The previous layer.
 	 */
-	public void updateInputWeights(Layer prevLayer) {
+	void updateInputWeights(Layer prevLayer) {
 		// TODO Auto-generated method stub
 		for (int n = 0; n < prevLayer.numNeurons + 1; n++) {
 			double oldDeltaWeight = deltaWeights[n];
