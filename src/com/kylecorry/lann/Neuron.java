@@ -1,5 +1,7 @@
 package com.kylecorry.lann;
 
+import com.kylecorry.lann.activation.Activation;
+
 public class Neuron {
 	public double output;
 	public double input;

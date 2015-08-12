@@ -7,6 +7,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 
+import com.kylecorry.lann.activation.Activation;
+import com.kylecorry.lann.activation.Linear;
+import com.kylecorry.lann.activation.Sigmoid;
+
 public class NeuralNetwork {
 
 	public int numLayers;

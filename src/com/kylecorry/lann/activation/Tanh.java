@@ -1,16 +1,16 @@
-package com.kylecorry.lann;
+package com.kylecorry.lann.activation;
 
-public class LeakyReLU extends Activation {
+public class Tanh extends Activation {
 
 	@Override
 	public double activate(double x) {
-		return x > 0 ? x : 0.01 * x;
+		return Math.tanh(x);
 	}
 
 	@Override
 	public double derivative(double x) {
 		// TODO Auto-generated method stub
-		return x > 0 ? 1 : 0.01;
+		return 1 - Math.pow(Math.tanh(x), 2);
 	}
 
 }
