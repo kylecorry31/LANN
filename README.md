@@ -10,6 +10,10 @@
 * Backprop training
 * Scalable design - create as many neurons / layers as needed
 
+## Documentation
+* [Javadocs](http://kylecorry31.github.io/LANN)
+* Uses (Semantic Versioning)[http://semver.org/]
+
 ## Getting Started
 
 ### Download
@@ -61,6 +65,3 @@ Download the .jar file from the [releases page](https://github.com/kylecorry31/K
 		)[0]);
 
 ```
-
-
-Uses (Semantic Versioning)[http://semver.org/].
