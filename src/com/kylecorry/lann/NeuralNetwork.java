@@ -16,6 +16,7 @@ public class NeuralNetwork {
 	private int numLayers;
 	private int numNeurons;
 	private Layer layers[];
+	private boolean verbose = true;
 
 	/**
 	 * A representation of a Feed-Forward neural network.
@@ -96,6 +97,25 @@ public class NeuralNetwork {
 	 */
 	public int getNumNeurons() {
 		return numNeurons;
+	}
+
+	/**
+	 * See if the training function prints the result of each iteration.
+	 * 
+	 * @return The verbosity of the training function.
+	 */
+	public boolean isVerbose() {
+		return verbose;
+	}
+
+	/**
+	 * Set the verbosity of the training function.
+	 * 
+	 * @param verbose
+	 *            The new verbosity value.
+	 */
+	public void setVerbose(boolean verbose) {
+		this.verbose = verbose;
 	}
 
 	/**
@@ -181,7 +201,8 @@ public class NeuralNetwork {
 		double error = 0;
 		for (int i = 0; i < epochs; i++) {
 			error = train(input, output);
-			System.out.println((i + 1) + " -- " + error);
+			if (verbose)
+				System.out.println((i + 1) + " -- " + error);
 		}
 		return error;
 	}
@@ -311,10 +332,8 @@ public class NeuralNetwork {
 			}
 			printWriter.close();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
