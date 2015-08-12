@@ -12,7 +12,7 @@
 
 ## Documentation
 * [Javadocs](http://kylecorry31.github.io/LANN)
-* Uses (Semantic Versioning)[http://semver.org/]
+* Uses [Semantic Versioning](http://semver.org/)
 
 ## Getting Started
 
