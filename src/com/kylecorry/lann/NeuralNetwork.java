@@ -225,7 +225,8 @@ public class NeuralNetwork {
 		double error = 0;
 		for (int i = 0; i < epochs; i++) {
 			error = train(input, output);
-			System.out.println((i + 1) + " -- " + error);
+			if (verbose)
+				System.out.println((i + 1) + " -- " + error);
 			if (error <= acceptableError)
 				break;
 		}
