@@ -61,3 +61,6 @@ Download the .jar file from the [releases page](https://github.com/kylecorry31/K
 		)[0]);
 
 ```
+
+
+Uses (Semantic Versioning)[http://semver.org/].
