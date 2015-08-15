@@ -86,7 +86,7 @@ public class NeuralNetwork {
 	 * 
 	 * @return The total number of layers in the neural network.
 	 */
-	public int length() {
+	public int size() {
 		return numLayers;
 	}
 
