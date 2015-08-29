@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 
 import com.kylecorry.lann.activation.Activation;
 import com.kylecorry.lann.activation.Linear;
@@ -417,5 +418,85 @@ public class NeuralNetwork {
 			totalError += error;
 		}
 		return totalError;
+	}
+
+	public static class Builder {
+		private ArrayList<Integer> layers;
+		private ArrayList<Activation> functions;
+		private int inputLayer = 1;
+		private Activation inputFunction = new Linear();
+		private int outputLayer = 1;
+		private Activation outputFunction = new Sigmoid();
+		private double[][] weights = null;
+		private String weightFile = null;
+
+		public Builder() {
+			layers = new ArrayList<Integer>();
+			functions = new ArrayList<Activation>();
+		}
+
+		public Builder setInputLayer(int numInput) {
+			inputLayer = numInput;
+			return this;
+		}
+
+		public Builder setInputLayer(int numInput, Activation function) {
+			inputLayer = numInput;
+			inputFunction = function;
+			return this;
+		}
+
+		public Builder loadWeights(String filename) {
+			weightFile = filename;
+			return this;
+		}
+
+		public Builder setWeights(double[][] weights) {
+			this.weights = weights;
+			return this;
+		}
+
+		public Builder setOutputLayer(int numOutput) {
+			outputLayer = numOutput;
+			return this;
+		}
+
+		public Builder setOutputLayer(int numOutput, Activation function) {
+			outputLayer = numOutput;
+			outputFunction = function;
+			return this;
+		}
+
+		public Builder addHiddenLayer(int numNeurons) {
+			layers.add(numNeurons);
+			functions.add(new Linear());
+			return this;
+		}
+
+		public Builder addHiddenLayer(int numNeurons, Activation function) {
+			layers.add(numNeurons);
+			functions.add(function);
+			return this;
+		}
+
+		public NeuralNetwork build() {
+			int[] layersInt = new int[layers.size() + 2];
+			Activation[] functionsArr = new Activation[functions.size() + 2];
+			for (int i = 0; i < layers.size(); i++) {
+				layersInt[i + 1] = layers.get(i);
+				functionsArr[i + 1] = functions.get(i);
+			}
+			layersInt[0] = inputLayer;
+			functionsArr[0] = inputFunction;
+			layersInt[layersInt.length - 1] = outputLayer;
+			functionsArr[functionsArr.length - 1] = outputFunction;
+			NeuralNetwork network = new NeuralNetwork(layersInt, functionsArr);
+			if (weightFile != null)
+				network.load(weightFile);
+			if (weights != null)
+				network.setWeights(weights);
+			return network;
+		}
+
 	}
 }
