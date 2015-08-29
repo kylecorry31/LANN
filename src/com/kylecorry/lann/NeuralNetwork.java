@@ -31,7 +31,7 @@ public class NeuralNetwork {
 	 *            index indicates the activation function that the layer will
 	 *            use.
 	 */
-	public NeuralNetwork(int layers[], Activation functions[]) {
+	NeuralNetwork(int layers[], Activation functions[]) {
 		assert(layers.length == functions.length);
 		this.numLayers = layers.length;
 		this.numNeurons = Utils.sum(layers);
@@ -43,42 +43,6 @@ public class NeuralNetwork {
 				this.layers[i] = new Layer(layers[i], functions[i], getOnes(layers[i]));
 			}
 		}
-	}
-
-	/**
-	 * Represents a Feed-Forward neural network.
-	 * 
-	 * Uses Linear, Sigmoid, Sigmoid as layers.
-	 * 
-	 * @param numInput
-	 *            The number of inputs.
-	 * @param numHidden
-	 *            The number of hidden neurons.
-	 * @param numOutput
-	 *            The number of outputs.
-	 */
-	public NeuralNetwork(int numInput, int numHidden, int numOutput) {
-		this(new int[] { numInput, numHidden, numOutput },
-				new Activation[] { new Linear(), new Sigmoid(), new Sigmoid() });
-	}
-
-	/**
-	 * Represents a Feed-Forward neural network.
-	 * 
-	 * Uses Linear, Sigmoid as the input and hidden layers.
-	 * 
-	 * @param numInput
-	 *            The number of inputs.
-	 * @param numHidden
-	 *            The number of hidden neurons.
-	 * @param numOutput
-	 *            The number of outputs.
-	 * @param outputFunction
-	 *            The activation function of the output layer.
-	 */
-	public NeuralNetwork(int numInput, int numHidden, int numOutput, Activation outputFunction) {
-		this(new int[] { numInput, numHidden, numOutput },
-				new Activation[] { new Linear(), new Sigmoid(), outputFunction });
 	}
 
 	/**
@@ -107,16 +71,6 @@ public class NeuralNetwork {
 	 */
 	public boolean isVerbose() {
 		return verbose;
-	}
-
-	/**
-	 * Set the verbosity of the training function.
-	 * 
-	 * @param verbose
-	 *            The new verbosity value.
-	 */
-	public void setVerbose(boolean verbose) {
-		this.verbose = verbose;
 	}
 
 	/**
@@ -420,6 +374,16 @@ public class NeuralNetwork {
 		return totalError;
 	}
 
+	/**
+	 * Indicates whether to print out information while training.
+	 * 
+	 * @param verbosity
+	 *            The verbosity of the neural network.
+	 */
+	private void setVerbose(boolean verbosity) {
+		verbose = verbosity;
+	}
+
 	public static class Builder {
 		private ArrayList<Integer> layers;
 		private ArrayList<Activation> functions;
@@ -429,56 +393,134 @@ public class NeuralNetwork {
 		private Activation outputFunction = new Sigmoid();
 		private double[][] weights = null;
 		private String weightFile = null;
+		private boolean verbose = true;
 
+		/**
+		 * Builder for creating neural network instances.
+		 */
 		public Builder() {
 			layers = new ArrayList<Integer>();
 			functions = new ArrayList<Activation>();
 		}
 
+		/**
+		 * Sets the input layer of the neural network. Default: 1 input, Linear
+		 * activation function.
+		 * 
+		 * @param numInput
+		 *            The number of inputs.
+		 */
 		public Builder setInputLayer(int numInput) {
 			inputLayer = numInput;
 			return this;
 		}
 
+		/**
+		 * Sets the input layer of the neural network. Default: 1 input, Linear
+		 * activation function.
+		 * 
+		 * @param numInput
+		 *            The number of inputs.
+		 * @param function
+		 *            The activation function of the input layer.
+		 */
 		public Builder setInputLayer(int numInput, Activation function) {
 			inputLayer = numInput;
 			inputFunction = function;
 			return this;
 		}
 
+		/**
+		 * Load the weights from the file indicated. Default: random weights.
+		 * 
+		 * @param filename
+		 *            The name of the file to retrieve the weights from.
+		 */
 		public Builder loadWeights(String filename) {
 			weightFile = filename;
 			return this;
 		}
 
+		/**
+		 * Sets the weights of the network's connections. Default: random
+		 * weights.
+		 * 
+		 * @param The
+		 *            new weights of the neural network.
+		 * @return
+		 */
 		public Builder setWeights(double[][] weights) {
 			this.weights = weights;
 			return this;
 		}
 
+		/**
+		 * Sets the output layer of the neural network. Default: 1 output,
+		 * Sigmoid activation function.
+		 * 
+		 * @param numOutput
+		 *            The number of outputs.
+		 */
 		public Builder setOutputLayer(int numOutput) {
 			outputLayer = numOutput;
 			return this;
 		}
 
+		/**
+		 * Sets the output layer of the neural network. Default: 1 output,
+		 * Sigmoid activation function.
+		 * 
+		 * @param numOutput
+		 *            The number of outputs.
+		 * @param function
+		 *            The activation function of the output layer.
+		 */
 		public Builder setOutputLayer(int numOutput, Activation function) {
 			outputLayer = numOutput;
 			outputFunction = function;
 			return this;
 		}
 
+		/**
+		 * Adds a hidden layer to the neural network. Default: No hidden layers.
+		 * 
+		 * @param numNeurons
+		 *            The number of neurons in the hidden layer.
+		 */
 		public Builder addHiddenLayer(int numNeurons) {
 			layers.add(numNeurons);
 			functions.add(new Linear());
 			return this;
 		}
 
+		/**
+		 * Adds a hidden layer to the neural network. Default: No hidden layers.
+		 * 
+		 * @param numNeurons
+		 *            The number of neurons in the hidden layer.
+		 * @param function
+		 *            The activation function of the hidden layer.
+		 */
 		public Builder addHiddenLayer(int numNeurons, Activation function) {
 			layers.add(numNeurons);
 			functions.add(function);
 			return this;
 		}
 
+		/**
+		 * Indicates whether to print information while training. Default: true.
+		 * 
+		 * @param verbosity
+		 *            The verbosity of the training.
+		 */
+		public Builder setVerbose(boolean verbosity) {
+			verbose = verbosity;
+			return this;
+		}
+
+		/**
+		 * Builds a neural network instance.
+		 */
 		public NeuralNetwork build() {
 			int[] layersInt = new int[layers.size() + 2];
 			Activation[] functionsArr = new Activation[functions.size() + 2];
@@ -495,6 +537,7 @@ public class NeuralNetwork {
 				network.load(weightFile);
 			if (weights != null)
 				network.setWeights(weights);
+			network.setVerbose(verbose);
 			return network;
 		}
 
