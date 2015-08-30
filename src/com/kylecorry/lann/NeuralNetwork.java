@@ -447,7 +447,6 @@ public class NeuralNetwork {
 		 * 
 		 * @param The
 		 *            new weights of the neural network.
-		 * @return
 		 */
 		public Builder setWeights(double[][] weights) {
 			this.weights = weights;
