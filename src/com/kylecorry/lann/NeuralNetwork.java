@@ -1,6 +1,7 @@
 package com.kylecorry.lann;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -295,6 +296,33 @@ public class NeuralNetwork {
 	}
 
 	/**
+	 * Saves the neural network to a file (CSV).
+	 * 
+	 * @param file
+	 *            The file in which to save the weights to.
+	 */
+	public void save(File file) {
+		PrintWriter printWriter;
+		try {
+			printWriter = new PrintWriter(file, "UTF-8");
+			for (double[] neuron : getWeights()) {
+				for (int i = 0; i < neuron.length; i++) {
+					if (i < neuron.length - 1)
+						printWriter.print(neuron[i] + ",");
+					else
+						printWriter.print(neuron[i]);
+				}
+				printWriter.println();
+			}
+			printWriter.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
 	 * Loads a neural network from a file.
 	 * 
 	 * @param filename
@@ -304,6 +332,46 @@ public class NeuralNetwork {
 		BufferedReader br;
 		try {
 			br = new BufferedReader(new FileReader(filename));
+
+			StringBuilder sb = new StringBuilder();
+			String line = br.readLine();
+
+			while (line != null) {
+				sb.append(line);
+				sb.append(System.lineSeparator());
+				line = br.readLine();
+			}
+			br.close();
+			String everything = sb.toString();
+			String[] neurons = everything.split("\n");
+			String[][] weights = new String[neurons.length][numNeurons];
+			for (int i = 0; i < weights.length; i++) {
+				weights[i] = neurons[i].split(",");
+			}
+			double[][] dWeights = new double[neurons.length][numNeurons];
+			for (int i = 0; i < dWeights.length; i++) {
+				for (int n = 0; n < weights[i].length; n++) {
+					dWeights[i][n] = Double.valueOf(weights[i][n]);
+				}
+			}
+			setWeights(dWeights);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Loads a neural network from a file.
+	 * 
+	 * @param filename
+	 *            The file to retrieve the weights from.
+	 */
+	public void load(File file) {
+		BufferedReader br;
+		try {
+			br = new BufferedReader(new FileReader(file));
 
 			StringBuilder sb = new StringBuilder();
 			String line = br.readLine();
