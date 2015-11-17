@@ -81,14 +81,13 @@ class NewNeuralNetwork {
 	}
 
 	private double[] normalize(double[] input) {
-		double min = 0, max = 0;
-		for (double i : input) {
-			min = Math.min(i, min);
-			max = Math.max(i, max);
+		double sum = 0;
+		for(double i : input){
+			sum += i;
 		}
 		double[] modInput = input.clone();
-		for (int i = 0; i < input.length; i++) {
-			modInput[i] = (input[i] - min) / (max - min);
+		for(int i = 0; i < input.length; i++){
+			modInput[i] /= sum;
 		}
 		return modInput;
 	}
