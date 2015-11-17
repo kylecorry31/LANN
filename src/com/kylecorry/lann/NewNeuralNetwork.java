@@ -1,6 +1,13 @@
 package com.kylecorry.lann;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import com.kylecorry.lann.activation.Activation;
 import com.kylecorry.matrix.Matrix;
@@ -8,20 +15,6 @@ import com.kylecorry.matrix.Matrix;
 class NewNeuralNetwork {
 
 	private ArrayList<Layer> layers;
-
-	// public static void main(String[] args) {
-	// NewNeuralNetwork net = new NewNeuralNetwork.Builder().addLayer(new int[]
-	// { 2, 3 }, new Linear())
-	// .addLayer(new int[] { 3, 1 }, new Sigmoid()).build();
-	// double[][] out = new double[][] { { 1 }, { 1 } };
-	// double[][] in = new double[][] { { 1, 0 }, { 0, 1 }};
-	// for (int i = 0; i < 100000; i++) {
-	// net.train(in, out, 0.01);
-	// for (double[] input : in)
-	// System.out.println(net.predict(input)[0]);
-	//
-	// }
-	// }
 
 	/**
 	 * A representation of a Feed-Forward neural network.
@@ -91,34 +84,44 @@ class NewNeuralNetwork {
 	 * @return The output of the neural network.
 	 */
 	public double[] classify(double[] input) {
-		return normalize(predict(input));
-	}
-
-	private double[] normalize(double[] input) {
 		double sum = 0;
-		for (double i : input) {
+		double[] out = predict(input);
+		for (double i : out) {
 			sum += i;
 		}
-		double[] modInput = input.clone();
-		for (int i = 0; i < input.length; i++) {
-			modInput[i] /= sum;
+		double[] modOut = out.clone();
+		for (int i = 0; i < out.length; i++) {
+			modOut[i] /= sum;
 		}
-		return modInput;
+		return modOut;
 	}
 
+	/**
+	 * Train the neural network to predict an output given some input.
+	 * 
+	 * @param input
+	 *            The input to the neural network.
+	 * @param output
+	 *            The target output for the given input.
+	 * @param learningRate
+	 *            The rate at which the neural network learns. This is normally
+	 *            0.01.
+	 * @return The error of the network as an mean cross entropy.
+	 */
 	public double train(double[][] input, double[][] output, double learningRate) {
 		double totalError = 0;
 		if (input.length == output.length) {
 			for (int i = 0; i < input.length; i++) {
 				double[] netOutput = this.predict(input[i]);
 				double error = this.crossEntropyError(netOutput, output[i]);
-				// Calc output gradient for each neuron of the output layer
+				// Calculate output gradient for each neuron of the output layer
 				for (int n = 0; n < output[i].length; n++) {
 					double delta = output[i][n] - netOutput[n];
 					layers.get(layers.size() - 1).gradients[n] = delta
 							* layers.get(layers.size() - 1).function.derivative(netOutput[n]);
 				}
-				// Calc hidden gradient for each neuron of the hidden layers
+				// Calculate hidden gradient for each neuron of the hidden
+				// layers
 				for (int l = layers.size() - 2; l > 0; l--) {
 					for (int n = 0; n < layers.get(l).getSize()[1] + 1; n++) {
 						double sum = 0;
@@ -146,6 +149,71 @@ class NewNeuralNetwork {
 			}
 		}
 		return totalError / input.length;
+	}
+
+	/**
+	 * Saves the neural network to a file (CSV).
+	 * 
+	 * @param filename
+	 *            The filename in which to save the weights to.
+	 */
+	public void save(String filename) {
+		PrintWriter printWriter;
+		try {
+			printWriter = new PrintWriter(filename, "UTF-8");
+			for (Layer l : layers) {
+				for (int i = 0; i < l.weights.length; i++) {
+					printWriter.print(Arrays.toString(l.weights[i]));
+					if (i != l.weights.length - 1)
+						printWriter.print(",");
+				}
+				printWriter.println();
+			}
+			printWriter.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Loads a neural network from a file.
+	 * 
+	 * @param filename
+	 *            The name of the file to retrieve the weights from.
+	 */
+	public void load(String filename) {
+		BufferedReader br;
+		try {
+			br = new BufferedReader(new FileReader(filename));
+
+			StringBuilder sb = new StringBuilder();
+			String line = br.readLine();
+
+			while (line != null) {
+				sb.append(line);
+				sb.append(System.lineSeparator());
+				line = br.readLine();
+			}
+			br.close();
+			String everything = sb.toString();
+			String[] strLayers = everything.split("\n");
+
+			for (int i = 0; i < strLayers.length; i++) {
+				String[] rows = strLayers[i].split("\\],\\[");
+				for (int r = 0; r < rows.length; r++) {
+					String[] cols = rows[r].replace("[", "").replace("]", "").split(", ");
+					for (int c = 0; c < cols.length; c++) {
+						layers.get(i).weights[r][c] = Double.parseDouble(cols[c]);
+					}
+				}
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -227,7 +295,7 @@ class NewNeuralNetwork {
 		private void initializeBias() {
 			for (int i = 0; i < bias.length; i++) {
 				for (int j = 0; j < bias[i].length; j++) {
-					bias[i][j] = Math.random();
+					bias[i][j] = 1.0;
 				}
 			}
 		}
