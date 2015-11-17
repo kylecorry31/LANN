@@ -9,6 +9,20 @@ class NewNeuralNetwork {
 
 	private ArrayList<Layer> layers;
 
+	// public static void main(String[] args) {
+	// NewNeuralNetwork net = new NewNeuralNetwork.Builder().addLayer(new int[]
+	// { 2, 3 }, new Linear())
+	// .addLayer(new int[] { 3, 1 }, new Sigmoid()).build();
+	// double[][] out = new double[][] { { 1 }, { 1 } };
+	// double[][] in = new double[][] { { 1, 0 }, { 0, 1 }};
+	// for (int i = 0; i < 100000; i++) {
+	// net.train(in, out, 0.01);
+	// for (double[] input : in)
+	// System.out.println(net.predict(input)[0]);
+	//
+	// }
+	// }
+
 	/**
 	 * A representation of a Feed-Forward neural network.
 	 */
@@ -82,14 +96,56 @@ class NewNeuralNetwork {
 
 	private double[] normalize(double[] input) {
 		double sum = 0;
-		for(double i : input){
+		for (double i : input) {
 			sum += i;
 		}
 		double[] modInput = input.clone();
-		for(int i = 0; i < input.length; i++){
+		for (int i = 0; i < input.length; i++) {
 			modInput[i] /= sum;
 		}
 		return modInput;
+	}
+
+	public double train(double[][] input, double[][] output, double learningRate) {
+		double totalError = 0;
+		if (input.length == output.length) {
+			for (int i = 0; i < input.length; i++) {
+				double[] netOutput = this.predict(input[i]);
+				double error = this.crossEntropyError(netOutput, output[i]);
+				// Calc output gradient for each neuron of the output layer
+				for (int n = 0; n < output[i].length; n++) {
+					double delta = output[i][n] - netOutput[n];
+					layers.get(layers.size() - 1).gradients[n] = delta
+							* layers.get(layers.size() - 1).function.derivative(netOutput[n]);
+				}
+				// Calc hidden gradient for each neuron of the hidden layers
+				for (int l = layers.size() - 2; l > 0; l--) {
+					for (int n = 0; n < layers.get(l).getSize()[1] + 1; n++) {
+						double sum = 0;
+						for (int m = 0; m < layers.get(l + 1).getSize()[1]; m++) {
+							sum += layers.get(l + 1).weights[m][n] * layers.get(l + 1).gradients[m];
+						}
+						layers.get(l).gradients[n] = sum * layers.get(l).function.derivative(layers.get(l).output[n]);
+					}
+				}
+				// Update weights
+				for (int l = layers.size() - 1; l > 0; l--) {
+					for (int n = 0; n < layers.get(l).size[1]; n++) {
+						for (int m = 0; m < layers.get(l - 1).output.length; m++) {
+							double oldDeltaWeight = layers.get(l).deltaWeights[n][m];
+							double newDeltaWeight = learningRate * layers.get(l - 1).output[m]
+									* layers.get(l).gradients[n] + 0.7 * oldDeltaWeight;
+							layers.get(l).deltaWeights[m][n] = newDeltaWeight;
+							layers.get(l).weights[m][n] += newDeltaWeight;
+						}
+					}
+				}
+
+				// Accumulate error
+				totalError += error;
+			}
+		}
+		return totalError / input.length;
 	}
 
 	/**
@@ -126,10 +182,11 @@ class NewNeuralNetwork {
 	}
 
 	static class Layer {
-		private double[][] weights;
+		private double[][] weights, deltaWeights;
 		private Activation function;
 		private double[][] bias;
 		private int[] size;
+		private double[] gradients, output;
 
 		/**
 		 * Represents a layer in a neural network.
@@ -142,6 +199,9 @@ class NewNeuralNetwork {
 		public Layer(int[] size, Activation fn) {
 			weights = new double[size[1]][size[0]];
 			bias = new double[size[1]][1];
+			gradients = new double[size[1]];
+			output = new double[size[1]];
+			deltaWeights = new double[size[1]][size[0]];
 			function = fn;
 			this.size = size;
 			initializeWeights();
@@ -180,7 +240,9 @@ class NewNeuralNetwork {
 		 * @return The output of the layer.
 		 */
 		public double[][] activate(double[][] input) {
-			return applyFunction(Matrix.matAdd(Matrix.matMult(weights, input), bias));
+			double[][] y = applyFunction(Matrix.matAdd(Matrix.matMult(weights, input), bias));
+			output = y[0];
+			return y;
 		}
 
 		/**
