@@ -24,8 +24,10 @@ Download the .jar file from the [releases page](https://github.com/kylecorry31/K
 
 ```java
 		// Create
-		NeuralNetwork net = new NeuralNetwork.Builder().addLayer(new int[] { 7, 10 }, new Sigmoid())
-				.addLayer(new int[] { 10, 2 }, new Softmax()).build();
+		NeuralNetwork net = new NeuralNetwork.Builder()
+				.addLayer(new int[] { 7, 10 }, new Sigmoid())
+				.addLayer(new int[] { 10, 2 }, new Softmax())
+				.build();
 
 		// Training input
 		double input[][] = new double[][] {
