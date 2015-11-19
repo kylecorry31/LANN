@@ -18,7 +18,7 @@
 
 ### Download
 
-Download the .jar file from the [releases page](https://github.com/kylecorry31/Kynet/releases) and add it to your build path of your Java project. (Supports JDK 1.6+)
+Download the .jar file from the [releases page](https://github.com/kylecorry31/Kynet/releases) and add it to the build path of your Java project. (Supports JDK 1.6+)
 
 ### Example - Hiking Based on Weather
 
