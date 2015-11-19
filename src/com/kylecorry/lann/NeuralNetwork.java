@@ -121,7 +121,7 @@ public class NeuralNetwork {
 							sum += Math.pow(Math.E, netOutput[o]);
 						}
 						deriv = Math.pow(Math.E, netOutput[n]) / sum;
-						deriv = layers.get(layers.size() - 1).function.derivative(deriv);
+						deriv = layers.get(layers.size() - 1).function.activate(deriv) - netOutput[n];
 					} else {
 						deriv = layers.get(layers.size() - 1).function.derivative(netOutput[n]);
 					}
