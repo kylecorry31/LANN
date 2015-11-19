@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import com.kylecorry.lann.activation.Activation;
+import com.kylecorry.lann.activation.Softmax;
 import com.kylecorry.matrix.Matrix;
 
 class NewNeuralNetwork {
@@ -117,13 +118,23 @@ class NewNeuralNetwork {
 				// Calculate output gradient for each neuron of the output layer
 				for (int n = 0; n < output[i].length; n++) {
 					double delta = output[i][n] - netOutput[n];
-					layers.get(layers.size() - 1).gradients[n] = delta
-							* layers.get(layers.size() - 1).function.derivative(netOutput[n]);
+					double deriv = 0;
+					if (layers.get(layers.size() - 1).function.getClass().equals(Softmax.class)) {
+						double sum = 0;
+						for (int o = 0; o < netOutput.length; o++) {
+							sum += Math.pow(Math.E, netOutput[o]);
+						}
+						deriv = Math.pow(Math.E, netOutput[n]) / sum;
+						deriv = layers.get(layers.size() - 1).function.derivative(deriv);
+					} else {
+						deriv = layers.get(layers.size() - 1).function.derivative(netOutput[n]);
+					}
+					layers.get(layers.size() - 1).gradients[n] = delta * deriv;
 				}
 				// Calculate hidden gradient for each neuron of the hidden
 				// layers
 				for (int l = layers.size() - 2; l > 0; l--) {
-					for (int n = 0; n < layers.get(l).getSize()[1] + 1; n++) {
+					for (int n = 0; n < layers.get(l).getSize()[1]; n++) {
 						double sum = 0;
 						for (int m = 0; m < layers.get(l + 1).getSize()[1]; m++) {
 							sum += layers.get(l + 1).weights[m][n] * layers.get(l + 1).gradients[m];
@@ -138,8 +149,8 @@ class NewNeuralNetwork {
 							double oldDeltaWeight = layers.get(l).deltaWeights[n][m];
 							double newDeltaWeight = learningRate * layers.get(l - 1).output[m]
 									* layers.get(l).gradients[n] + 0.7 * oldDeltaWeight;
-							layers.get(l).deltaWeights[m][n] = newDeltaWeight;
-							layers.get(l).weights[m][n] += newDeltaWeight;
+							layers.get(l).deltaWeights[n][m] = newDeltaWeight;
+							layers.get(l).weights[n][m] += newDeltaWeight;
 						}
 					}
 				}
@@ -295,7 +306,7 @@ class NewNeuralNetwork {
 		private void initializeBias() {
 			for (int i = 0; i < bias.length; i++) {
 				for (int j = 0; j < bias[i].length; j++) {
-					bias[i][j] = 1.0;
+					bias[i][j] = Math.random() * 0.01;
 				}
 			}
 		}
@@ -309,7 +320,7 @@ class NewNeuralNetwork {
 		 */
 		public double[][] activate(double[][] input) {
 			double[][] y = applyFunction(Matrix.matAdd(Matrix.matMult(weights, input), bias));
-			output = y[0];
+			output = Matrix.transpose(y)[0];
 			return y;
 		}
 
@@ -322,9 +333,20 @@ class NewNeuralNetwork {
 		 */
 		private double[][] applyFunction(double[][] input) {
 			double[][] activated = input.clone();
+			double sum = 0;
 			for (int i = 0; i < input.length; i++) {
 				for (int j = 0; j < input[i].length; j++) {
 					activated[i][j] = function.activate(input[i][j]);
+					if (function.getClass().equals(Softmax.class)) {
+						sum += activated[i][j];
+					}
+				}
+			}
+			if (function.getClass().equals(Softmax.class)) {
+				for (int i = 0; i < input.length; i++) {
+					for (int j = 0; j < input[i].length; j++) {
+						activated[i][j] /= sum;
+					}
 				}
 			}
 			return activated;
