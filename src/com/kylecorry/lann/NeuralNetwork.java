@@ -1,111 +1,59 @@
 package com.kylecorry.lann;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import com.kylecorry.lann.activation.Activation;
-import com.kylecorry.lann.activation.Linear;
-import com.kylecorry.lann.activation.Sigmoid;
+import com.kylecorry.lann.activation.Softmax;
+import com.kylecorry.matrix.Matrix;
 
 public class NeuralNetwork {
 
-	private int numLayers;
-	private int numNeurons;
-	private Layer layers[];
-	private boolean verbose = true;
+	private ArrayList<Layer> layers;
 
 	/**
 	 * A representation of a Feed-Forward neural network.
-	 * 
-	 * @param layers
-	 *            An array of integers where the length indicates the number of
-	 *            layers and the value indicates the number of neurons at the
-	 *            layer with the value's index.
-	 * @param functions
-	 *            An array of Activation functions where the function at each
-	 *            index indicates the activation function that the layer will
-	 *            use.
 	 */
-	NeuralNetwork(int layers[], Activation functions[]) {
-		assert(layers.length == functions.length);
-		this.numLayers = layers.length;
-		this.numNeurons = Utils.sum(layers);
-		this.layers = new Layer[numLayers];
-		for (int i = 0; i < numLayers; i++) {
-			if (i >= 1) {
-				this.layers[i] = new Layer(layers[i], functions[i], getRandomWeights(layers[i], this.layers[i - 1]));
-			} else {
-				this.layers[i] = new Layer(layers[i], functions[i], getOnes(layers[i]));
-			}
+	NeuralNetwork() {
+		layers = new ArrayList<Layer>();
+	}
+
+	/**
+	 * Add a layer to the neural network.
+	 * 
+	 * @param l
+	 *            The layer to add to the neural network.
+	 */
+	private void addLayer(Layer l) {
+		if (layers.size() == 0 || layers.get(layers.size() - 1).getSize()[1] == l.getSize()[0]) {
+			layers.add(l);
+		} else {
+			System.err.println("Layer input did not match the output of the last layer.");
+			System.exit(1);
 		}
 	}
 
 	/**
-	 * The number of layers in the neural network including the input and
-	 * output.
+	 * Calculate the cross entropy error of the neural network.
 	 * 
-	 * @return The total number of layers in the neural network.
+	 * @param y
+	 *            The output of the neural network.
+	 * @param y_
+	 *            The actual expected output.
+	 * @return The cross entropy error.
 	 */
-	public int size() {
-		return numLayers;
-	}
-
-	/**
-	 * The number of neurons in the neural network.
-	 * 
-	 * @return The total number of neurons in the neural network.
-	 */
-	public int getNumNeurons() {
-		return numNeurons;
-	}
-
-	/**
-	 * See if the training function prints the result of each iteration.
-	 * 
-	 * @return The verbosity of the training function.
-	 */
-	public boolean isVerbose() {
-		return verbose;
-	}
-
-	/**
-	 * Generates a set of random weights.
-	 * 
-	 * @param i
-	 *            Number of neurons in current layer
-	 * @param prevLayer
-	 *            The previous layer
-	 * @return A set of random weights for the current layer
-	 */
-	private double[][] getRandomWeights(int i, Layer prevLayer) {
-		double weights[][] = new double[i][prevLayer.numNeurons + 1];
-		for (int j = 0; j < i; j++) {
-			for (int k = 0; k <= prevLayer.numNeurons; k++) {
-				weights[j][k] = 2 * Math.random() - 1;
-			}
+	public double crossEntropyError(double[] y, double[] y_) {
+		double sum = 0;
+		for (int i = 0; i < y.length; i++) {
+			sum += y_[i] * Math.log(y[i]);
 		}
-		return weights;
-	}
-
-	/**
-	 * Generates a weights set consisting of only 1s (for input layer).
-	 * 
-	 * @param i
-	 *            Number of neurons in the input layer.
-	 * @return A set of weights equal to 1 for the current layer.
-	 */
-	private double[][] getOnes(int i) {
-		double weights[][] = new double[i][1];
-		for (int j = 0; j < i; j++) {
-			weights[j] = new double[] { 1 };
-		}
-		return weights;
+		return -sum;
 	}
 
 	/**
@@ -114,31 +62,39 @@ public class NeuralNetwork {
 	 * @param input
 	 *            The input to the neural network which is equal in size to the
 	 *            number of input neurons.
-	 * @return The output of the neural network or an empty array if input size
-	 *         does not equal the length of the first layer.
+	 * @return The output of the neural network.
 	 */
-	public double[] predict(double input[]) {
-		if (layers[0].numNeurons != input.length)
-			return new double[] {};
-		for (int i = 0; i < layers[0].numNeurons; i++) {
-			layers[0].neurons[i].input = input[i];
-			layers[0].neurons[i].activate();
+	public double[] predict(double[] input) {
+		if (input.length != layers.get(0).getSize()[0]) {
+			System.err.println("Input size did not match the input size of the first layer.");
+			System.exit(1);
 		}
-		for (int i = 1; i < numLayers; i++) {
-			for (int n = 0; n < layers[i].numNeurons; n++) {
-				layers[i].neurons[n].input = 0;
-				for (int j = 0; j <= layers[i - 1].numNeurons; j++) {
-					layers[i].neurons[n].input += layers[i - 1].neurons[j].output * layers[i].neurons[n].weights[j];
-				}
-				layers[i].neurons[n].activate();
-			}
+		double[][] modInput = Matrix.transpose(new double[][] { input });
+		for (Layer l : layers) {
+			modInput = l.activate(modInput);
 		}
+		return Matrix.transpose(modInput)[0];
+	}
 
-		double output[] = new double[layers[numLayers - 1].numNeurons];
-		for (int i = 0; i < output.length; i++) {
-			output[i] = layers[numLayers - 1].neurons[i].output;
+	/**
+	 * Give a prediction based on some input with probability percent.
+	 * 
+	 * @param input
+	 *            The input to the neural network which is equal in size to the
+	 *            number of input neurons.
+	 * @return The output of the neural network.
+	 */
+	public double[] classify(double[] input) {
+		double sum = 0;
+		double[] out = predict(input);
+		for (double i : out) {
+			sum += i;
 		}
-		return output;
+		double[] modOut = out.clone();
+		for (int i = 0; i < out.length; i++) {
+			modOut[i] /= sum;
+		}
+		return modOut;
 	}
 
 	/**
@@ -148,124 +104,62 @@ public class NeuralNetwork {
 	 *            The input to the neural network.
 	 * @param output
 	 *            The target output for the given input.
-	 * @param epochs
-	 *            The number of training cycles.
-	 * @return The error of the network as an accumulated RMS.
+	 * @param learningRate
+	 *            The rate at which the neural network learns. This is normally
+	 *            0.01.
+	 * @return The error of the network as an mean cross entropy.
 	 */
-	public double train(double input[][], double output[][], int epochs) {
-		assert(input.length != output.length);
-		double error = 0;
-		for (int i = 0; i < epochs; i++) {
-			error = train(input, output);
-			if (verbose)
-				System.out.println((i + 1) + " -- " + error);
-		}
-		return error;
-	}
-
-	/**
-	 * Train the neural network to predict an output given some input.
-	 * 
-	 * @param input
-	 *            The input to the neural network.
-	 * @param output
-	 *            The target output for the given input.
-	 * @param epochs
-	 *            The maximum number of training cycles.
-	 * @param acceptableError
-	 *            The amount of error at which to stop training.
-	 * @return The error of the network as an accumulated RMS.
-	 */
-	public double train(double input[][], double output[][], int epochs, double acceptableError) {
-		assert(input.length != output.length);
-		double error = 0;
-		for (int i = 0; i < epochs; i++) {
-			error = train(input, output);
-			if (verbose)
-				System.out.println((i + 1) + " -- " + error);
-			if (error <= acceptableError)
-				break;
-		}
-		return error;
-	}
-
-	/**
-	 * Train the neural network to predict an output given some input.
-	 * 
-	 * @param input
-	 *            The input to the neural network.
-	 * @param output
-	 *            The target output for the given input.
-	 * @return The error of the network as an accumulated RMS.
-	 */
-	public double train(double input[][], double output[][]) {
-		assert(input.length != output.length);
+	public double train(double[][] input, double[][] output, double learningRate) {
 		double totalError = 0;
-		// calculate overall net error
-		for (int i = 0; i < input.length; i++) {
-			double error = 0;
-			double[] netOut = this.predict(input[i]);
-			// double[] outputError = new double[netOut.length];
-			for (int j = 0; j < netOut.length; j++) {
-				error += Math.pow(output[i][j] - netOut[j], 2);
-			}
-			error /= layers[numLayers - 1].numNeurons;
-			error = Math.sqrt(error);
-
-			for (int n = 0; n < layers[numLayers - 1].numNeurons; n++) {
-				layers[numLayers - 1].neurons[n].calcOutputGradients(output[i][n]);
-			}
-
-			for (int l = numLayers - 2; l > 0; l--) {
-
-				for (int n = 0; n < layers[l].numNeurons + 1; n++) {
-					layers[l].neurons[n].calcHiddenGradients(layers[l + 1], n);
+		if (input.length == output.length) {
+			for (int i = 0; i < input.length; i++) {
+				double[] netOutput = this.predict(input[i]);
+				double error = this.crossEntropyError(netOutput, output[i]);
+				// Calculate output gradient for each neuron of the output layer
+				for (int n = 0; n < output[i].length; n++) {
+					double delta = output[i][n] - netOutput[n];
+					double deriv = 0;
+					if (layers.get(layers.size() - 1).function.getClass().equals(Softmax.class)) {
+						double sum = 0;
+						for (int o = 0; o < netOutput.length; o++) {
+							sum += Math.pow(Math.E, netOutput[o]);
+						}
+						deriv = Math.pow(Math.E, netOutput[n]) / sum;
+						deriv = layers.get(layers.size() - 1).function.derivative(deriv);
+					} else {
+						deriv = layers.get(layers.size() - 1).function.derivative(netOutput[n]);
+					}
+					layers.get(layers.size() - 1).gradients[n] = delta * deriv;
+				}
+				// Calculate hidden gradient for each neuron of the hidden
+				// layers
+				for (int l = layers.size() - 2; l > 0; l--) {
+					for (int n = 0; n < layers.get(l).getSize()[1]; n++) {
+						double sum = 0;
+						for (int m = 0; m < layers.get(l + 1).getSize()[1]; m++) {
+							sum += layers.get(l + 1).weights[m][n] * layers.get(l + 1).gradients[m];
+						}
+						layers.get(l).gradients[n] = sum * layers.get(l).function.derivative(layers.get(l).output[n]);
+					}
+				}
+				// Update weights
+				for (int l = layers.size() - 1; l > 0; l--) {
+					for (int n = 0; n < layers.get(l).size[1]; n++) {
+						for (int m = 0; m < layers.get(l - 1).output.length; m++) {
+							double oldDeltaWeight = layers.get(l).deltaWeights[n][m];
+							double newDeltaWeight = learningRate * layers.get(l - 1).output[m]
+									* layers.get(l).gradients[n] + 0.7 * oldDeltaWeight;
+							layers.get(l).deltaWeights[n][m] = newDeltaWeight;
+							layers.get(l).weights[n][m] += newDeltaWeight;
+						}
+					}
 				}
 
-			}
-
-			for (int l = numLayers - 1; l > 0; l--) {
-				for (int n = 0; n < layers[l].numNeurons; n++) {
-					layers[l].neurons[n].updateInputWeights(layers[l - 1]);
-				}
-			}
-			totalError += error;
-
-		}
-		return totalError;
-	}
-
-	/**
-	 * Get the current weights of the network's connections.
-	 * 
-	 * @return The current weights of the network connections.
-	 */
-	public double[][] getWeights() {
-		double weights[][] = new double[numNeurons + numLayers][numNeurons];
-		int position = 0;
-		for (int l = 0; l < numLayers; l++) {
-			for (int n = 0; n <= layers[l].numNeurons; n++) {
-				weights[position] = layers[l].neurons[n].weights;
-				position++;
+				// Accumulate error
+				totalError += error;
 			}
 		}
-		return weights;
-	}
-
-	/**
-	 * Sets the weights of the network's connections.
-	 * 
-	 * @param weights
-	 *            The new weights of the network.
-	 */
-	public void setWeights(double weights[][]) {
-		int position = 0;
-		for (int l = 0; l < numLayers; l++) {
-			for (int n = 0; n <= layers[l].numNeurons; n++) {
-				layers[l].neurons[n].weights = weights[position];
-				position++;
-			}
-		}
+		return totalError / input.length;
 	}
 
 	/**
@@ -278,39 +172,11 @@ public class NeuralNetwork {
 		PrintWriter printWriter;
 		try {
 			printWriter = new PrintWriter(filename, "UTF-8");
-			for (double[] neuron : getWeights()) {
-				for (int i = 0; i < neuron.length; i++) {
-					if (i < neuron.length - 1)
-						printWriter.print(neuron[i] + ",");
-					else
-						printWriter.print(neuron[i]);
-				}
-				printWriter.println();
-			}
-			printWriter.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * Saves the neural network to a file (CSV).
-	 * 
-	 * @param file
-	 *            The file in which to save the weights to.
-	 */
-	public void save(File file) {
-		PrintWriter printWriter;
-		try {
-			printWriter = new PrintWriter(file, "UTF-8");
-			for (double[] neuron : getWeights()) {
-				for (int i = 0; i < neuron.length; i++) {
-					if (i < neuron.length - 1)
-						printWriter.print(neuron[i] + ",");
-					else
-						printWriter.print(neuron[i]);
+			for (Layer l : layers) {
+				for (int i = 0; i < l.weights.length; i++) {
+					printWriter.print(Arrays.toString(l.weights[i]));
+					if (i != l.weights.length - 1)
+						printWriter.print(",");
 				}
 				printWriter.println();
 			}
@@ -343,18 +209,17 @@ public class NeuralNetwork {
 			}
 			br.close();
 			String everything = sb.toString();
-			String[] neurons = everything.split("\n");
-			String[][] weights = new String[neurons.length][numNeurons];
-			for (int i = 0; i < weights.length; i++) {
-				weights[i] = neurons[i].split(",");
-			}
-			double[][] dWeights = new double[neurons.length][numNeurons];
-			for (int i = 0; i < dWeights.length; i++) {
-				for (int n = 0; n < weights[i].length; n++) {
-					dWeights[i][n] = Double.valueOf(weights[i][n]);
+			String[] strLayers = everything.split("\n");
+
+			for (int i = 0; i < strLayers.length; i++) {
+				String[] rows = strLayers[i].split("\\],\\[");
+				for (int r = 0; r < rows.length; r++) {
+					String[] cols = rows[r].replace("[", "").replace("]", "").split(", ");
+					for (int c = 0; c < cols.length; c++) {
+						layers.get(i).weights[r][c] = Double.parseDouble(cols[c]);
+					}
 				}
 			}
-			setWeights(dWeights);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -363,225 +228,26 @@ public class NeuralNetwork {
 	}
 
 	/**
-	 * Loads a neural network from a file.
-	 * 
-	 * @param filename
-	 *            The file to retrieve the weights from.
+	 * Builder for creating neural network instances.
 	 */
-	public void load(File file) {
-		BufferedReader br;
-		try {
-			br = new BufferedReader(new FileReader(file));
-
-			StringBuilder sb = new StringBuilder();
-			String line = br.readLine();
-
-			while (line != null) {
-				sb.append(line);
-				sb.append(System.lineSeparator());
-				line = br.readLine();
-			}
-			br.close();
-			String everything = sb.toString();
-			String[] neurons = everything.split("\n");
-			String[][] weights = new String[neurons.length][numNeurons];
-			for (int i = 0; i < weights.length; i++) {
-				weights[i] = neurons[i].split(",");
-			}
-			double[][] dWeights = new double[neurons.length][numNeurons];
-			for (int i = 0; i < dWeights.length; i++) {
-				for (int n = 0; n < weights[i].length; n++) {
-					dWeights[i][n] = Double.valueOf(weights[i][n]);
-				}
-			}
-			setWeights(dWeights);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * Rounds the output of a Sigmoid output layer to the nearest whole number.
-	 * 
-	 * @param input
-	 *            The input of the neural network.
-	 * @return The output of the neural network with integer values.
-	 */
-	public double[] classify(double input[]) {
-		double[] output = this.predict(input);
-		for (int i = 0; i < output.length; i++) {
-			output[i] = Math.round(output[i]);
-		}
-		return output;
-	}
-
-	/**
-	 * Test the neural network on a testing set.
-	 * 
-	 * @param input
-	 *            The input to the neural network.
-	 * @param output
-	 *            The target output for the given input.
-	 * @return The error of the network as an accumulated RMS.
-	 */
-	public double test(double input[][], double output[][]) {
-		assert(input.length != output.length);
-		double totalError = 0.0;
-		for (int i = 0; i < input.length; i++) {
-			double error = 0.0;
-			double newOutput[] = predict(input[i]);
-			for (int j = 0; j < output[i].length; j++) {
-				error += Math.pow(newOutput[j] - output[i][j], 2);
-			}
-			error /= output.length;
-			error = Math.sqrt(error);
-			totalError += error;
-		}
-		return totalError;
-	}
-
-	/**
-	 * Indicates whether to print out information while training.
-	 * 
-	 * @param verbosity
-	 *            The verbosity of the neural network.
-	 */
-	private void setVerbose(boolean verbosity) {
-		verbose = verbosity;
-	}
-
 	public static class Builder {
-		private ArrayList<Integer> layers;
-		private ArrayList<Activation> functions;
-		private int inputLayer = 1;
-		private Activation inputFunction = new Linear();
-		private int outputLayer = 1;
-		private Activation outputFunction = new Sigmoid();
-		private double[][] weights = null;
-		private String weightFile = null;
-		private boolean verbose = true;
+		private NeuralNetwork net;
 
-		/**
-		 * Builder for creating neural network instances.
-		 */
 		public Builder() {
-			layers = new ArrayList<Integer>();
-			functions = new ArrayList<Activation>();
+			net = new NeuralNetwork();
 		}
 
 		/**
-		 * Sets the input layer of the neural network. Default: 1 input, Linear
-		 * activation function.
+		 * Adds a layer to the neural network.
 		 * 
-		 * @param numInput
-		 *            The number of inputs.
-		 */
-		public Builder setInputLayer(int numInput) {
-			inputLayer = numInput;
-			return this;
-		}
-
-		/**
-		 * Sets the input layer of the neural network. Default: 1 input, Linear
-		 * activation function.
-		 * 
-		 * @param numInput
-		 *            The number of inputs.
+		 * @param size
+		 *            The size of the layer in this format: [input, output]
 		 * @param function
-		 *            The activation function of the input layer.
+		 *            The activation function of the layer.
 		 */
-		public Builder setInputLayer(int numInput, Activation function) {
-			inputLayer = numInput;
-			inputFunction = function;
-			return this;
-		}
-
-		/**
-		 * Load the weights from the file indicated. Default: random weights.
-		 * 
-		 * @param filename
-		 *            The name of the file to retrieve the weights from.
-		 */
-		public Builder loadWeights(String filename) {
-			weightFile = filename;
-			return this;
-		}
-
-		/**
-		 * Sets the weights of the network's connections. Default: random
-		 * weights.
-		 * 
-		 * @param The
-		 *            new weights of the neural network.
-		 */
-		public Builder setWeights(double[][] weights) {
-			this.weights = weights;
-			return this;
-		}
-
-		/**
-		 * Sets the output layer of the neural network. Default: 1 output,
-		 * Sigmoid activation function.
-		 * 
-		 * @param numOutput
-		 *            The number of outputs.
-		 */
-		public Builder setOutputLayer(int numOutput) {
-			outputLayer = numOutput;
-			return this;
-		}
-
-		/**
-		 * Sets the output layer of the neural network. Default: 1 output,
-		 * Sigmoid activation function.
-		 * 
-		 * @param numOutput
-		 *            The number of outputs.
-		 * @param function
-		 *            The activation function of the output layer.
-		 */
-		public Builder setOutputLayer(int numOutput, Activation function) {
-			outputLayer = numOutput;
-			outputFunction = function;
-			return this;
-		}
-
-		/**
-		 * Adds a hidden layer to the neural network. Default: No hidden layers.
-		 * 
-		 * @param numNeurons
-		 *            The number of neurons in the hidden layer.
-		 */
-		public Builder addHiddenLayer(int numNeurons) {
-			layers.add(numNeurons);
-			functions.add(new Linear());
-			return this;
-		}
-
-		/**
-		 * Adds a hidden layer to the neural network. Default: No hidden layers.
-		 * 
-		 * @param numNeurons
-		 *            The number of neurons in the hidden layer.
-		 * @param function
-		 *            The activation function of the hidden layer.
-		 */
-		public Builder addHiddenLayer(int numNeurons, Activation function) {
-			layers.add(numNeurons);
-			functions.add(function);
-			return this;
-		}
-
-		/**
-		 * Indicates whether to print information while training. Default: true.
-		 * 
-		 * @param verbosity
-		 *            The verbosity of the training.
-		 */
-		public Builder setVerbose(boolean verbosity) {
-			verbose = verbosity;
+		public NeuralNetwork.Builder addLayer(int[] size, Activation function) {
+			Layer l = new Layer(size, function);
+			net.addLayer(l);
 			return this;
 		}
 
@@ -589,24 +255,113 @@ public class NeuralNetwork {
 		 * Builds a neural network instance.
 		 */
 		public NeuralNetwork build() {
-			int[] layersInt = new int[layers.size() + 2];
-			Activation[] functionsArr = new Activation[functions.size() + 2];
-			for (int i = 0; i < layers.size(); i++) {
-				layersInt[i + 1] = layers.get(i);
-				functionsArr[i + 1] = functions.get(i);
-			}
-			layersInt[0] = inputLayer;
-			functionsArr[0] = inputFunction;
-			layersInt[layersInt.length - 1] = outputLayer;
-			functionsArr[functionsArr.length - 1] = outputFunction;
-			NeuralNetwork network = new NeuralNetwork(layersInt, functionsArr);
-			if (weightFile != null)
-				network.load(weightFile);
-			if (weights != null)
-				network.setWeights(weights);
-			network.setVerbose(verbose);
-			return network;
+			return net;
 		}
 
 	}
+
+	static class Layer {
+		private double[][] weights, deltaWeights;
+		private Activation function;
+		private double[][] bias;
+		private int[] size;
+		private double[] gradients, output;
+
+		/**
+		 * Represents a layer in a neural network.
+		 * 
+		 * @param size
+		 *            The size of the layer in this format: [input, output]
+		 * @param function
+		 *            The activation function for the neurons in this layer.
+		 */
+		public Layer(int[] size, Activation fn) {
+			weights = new double[size[1]][size[0]];
+			bias = new double[size[1]][1];
+			gradients = new double[size[1]];
+			output = new double[size[1]];
+			deltaWeights = new double[size[1]][size[0]];
+			function = fn;
+			this.size = size;
+			initializeWeights();
+			initializeBias();
+		}
+
+		/**
+		 * Initializes the layer's weights to random double values between 0 and
+		 * 1.
+		 */
+		private void initializeWeights() {
+			for (int i = 0; i < weights.length; i++) {
+				for (int j = 0; j < weights[i].length; j++) {
+					weights[i][j] = Math.random();
+				}
+			}
+		}
+
+		/**
+		 * Initializes the layer's bias neurons to random double values between
+		 * 0 and 1.
+		 */
+		private void initializeBias() {
+			for (int i = 0; i < bias.length; i++) {
+				for (int j = 0; j < bias[i].length; j++) {
+					bias[i][j] = 0.1;
+				}
+			}
+		}
+
+		/**
+		 * Processes the input to the layer.
+		 * 
+		 * @param input
+		 *            The input to the layer.
+		 * @return The output of the layer.
+		 */
+		public double[][] activate(double[][] input) {
+			double[][] y = applyFunction(Matrix.matAdd(Matrix.matMult(weights, input), bias));
+			output = Matrix.transpose(y)[0];
+			return y;
+		}
+
+		/**
+		 * Applies the activation function to the processed input.
+		 * 
+		 * @param input
+		 *            The input to the activation function.
+		 * @return The output of the activation function.
+		 */
+		private double[][] applyFunction(double[][] input) {
+			double[][] activated = input.clone();
+			double sum = 0;
+			for (int i = 0; i < input.length; i++) {
+				for (int j = 0; j < input[i].length; j++) {
+					activated[i][j] = function.activate(input[i][j]);
+					if (function.getClass().equals(Softmax.class)) {
+						sum += activated[i][j];
+					}
+				}
+			}
+			if (function.getClass().equals(Softmax.class)) {
+				for (int i = 0; i < input.length; i++) {
+					for (int j = 0; j < input[i].length; j++) {
+						activated[i][j] /= sum;
+					}
+				}
+			}
+			return activated;
+		}
+
+		/**
+		 * Get the input and output size of the layer.
+		 * 
+		 * @return An int array in this format: [input, output] representing the
+		 *         size of the layer.
+		 */
+		public int[] getSize() {
+			return size;
+		}
+
+	}
+
 }
