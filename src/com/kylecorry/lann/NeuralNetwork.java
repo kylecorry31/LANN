@@ -77,24 +77,20 @@ public class NeuralNetwork {
 	}
 
 	/**
-	 * Give a prediction based on some input with probability percent.
-	 * 
-	 * @param input
-	 *            The input to the neural network which is equal in size to the
-	 *            number of input neurons.
-	 * @return The output of the neural network.
+	 * Get the position of the most probable in an output array.
+	 * @param output The output of the neural network (using Softmax)
+	 * @return The position of the most probable class. 
 	 */
-	public double[] classify(double[] input) {
-		double sum = 0;
-		double[] out = predict(input);
-		for (double i : out) {
-			sum += i;
+	public static int argMax(double[] output){
+		int pos = 0;
+		double max = output[0];
+		for(int i = 1; i < output.length; i++){
+			if(max < output[i]){
+				max = output[i];
+				pos = i;
+			}
 		}
-		double[] modOut = out.clone();
-		for (int i = 0; i < out.length; i++) {
-			modOut[i] /= sum;
-		}
-		return modOut;
+		return pos;
 	}
 
 	/**
