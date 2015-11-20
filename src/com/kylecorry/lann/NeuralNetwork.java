@@ -139,13 +139,22 @@ public class NeuralNetwork {
 					}
 				}
 				// calc output gradients
-				double[][] gradients = Matrix.matElementMult(deltas, derivs);
-				layers.get(layers.size() - 1).gradients2 = gradients;
+				layers.get(layers.size() - 1).gradients2 = Matrix.matElementMult(deltas, derivs);
 				// calc delta array
 				for (int l = layers.size() - 2; l >= 0; l--) {
 					double[][] deltas2 = Matrix.matMult(Matrix.transpose(layers.get(l + 1).weights), layers.get(l + 1).gradients2);
+					double[][] derivs2 = new double[layers.get(l).getSize()[1]][1];
+					for(int d = 0; d < layers.get(l).getSize()[1]; d++){
+						derivs2[d][0] = layers.get(l).function.derivative(layers.get(l).output[d]);
+					}
 					// mult with derivs
+					layers.get(l).gradients2 = Matrix.matElementMult(deltas2, derivs2);
+					
 				}
+				
+				
+				
+				
 				
 				// no longer needed
 				for (int n = 0; n < output[i].length; n++) {
@@ -171,7 +180,6 @@ public class NeuralNetwork {
 						for (int m = 0; m < layers.get(l + 1).getSize()[1]; m++) {
 							sum += layers.get(l + 1).weights[m][n] * layers.get(l + 1).gradients[m];
 						}
-						System.out.println(sum + " actual");
 						layers.get(l).gradients[n] = sum * layers.get(l).function.derivative(layers.get(l).output[n]);
 					}
 				}
