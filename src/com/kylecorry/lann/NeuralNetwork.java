@@ -10,10 +10,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import com.kylecorry.lann.activation.Activation;
+import com.kylecorry.lann.activation.Sigmoid;
 import com.kylecorry.lann.activation.Softmax;
 import com.kylecorry.matrix.Matrix;
 
 public class NeuralNetwork {
+
+	public static void main(String[] args) {
+		NeuralNetwork net = new NeuralNetwork.Builder().addLayer(new int[] { 1, 2 }, new Sigmoid())
+				.addLayer(new int[] { 2, 2 }, new Sigmoid()).build();
+		net.train(new double[][] { { 1 } }, new double[][] { { 1, 0 } }, 0.1);
+	}
 
 	private ArrayList<Layer> layers;
 
@@ -78,14 +85,16 @@ public class NeuralNetwork {
 
 	/**
 	 * Get the position of the most probable in an output array.
-	 * @param output The output of the neural network (using Softmax)
-	 * @return The position of the most probable class. 
+	 * 
+	 * @param output
+	 *            The output of the neural network (using Softmax)
+	 * @return The position of the most probable class.
 	 */
-	public static int argMax(double[] output){
+	public static int argMax(double[] output) {
 		int pos = 0;
 		double max = output[0];
-		for(int i = 1; i < output.length; i++){
-			if(max < output[i]){
+		for (int i = 1; i < output.length; i++) {
+			if (max < output[i]) {
 				max = output[i];
 				pos = i;
 			}
@@ -112,6 +121,33 @@ public class NeuralNetwork {
 				double[] netOutput = this.predict(input[i]);
 				double error = this.crossEntropyError(netOutput, output[i]);
 				// Calculate output gradient for each neuron of the output layer
+				// Calc delta array
+				double[][] deltas = Matrix
+						.transpose(Matrix.matSubt(new double[][] { output[i] }, new double[][] { netOutput }));
+				// Calc deriv array
+				double[][] derivs = new double[netOutput.length][1];
+				for (int d = 0; d < netOutput.length; d++) {
+					if (layers.get(layers.size() - 1).function.getClass().equals(Softmax.class)) {
+						double sum = 0;
+						for (int o = 0; o < netOutput.length; o++) {
+							sum += Math.pow(Math.E, netOutput[o]);
+						}
+						derivs[d][0] = Math.pow(Math.E, netOutput[d]) / sum;
+						derivs[d][0] = layers.get(layers.size() - 1).function.activate(derivs[d][0]) - netOutput[d];
+					} else {
+						derivs[d][0] = layers.get(layers.size() - 1).function.derivative(netOutput[d]);
+					}
+				}
+				// calc output gradients
+				double[][] gradients = Matrix.matElementMult(deltas, derivs);
+				layers.get(layers.size() - 1).gradients2 = gradients;
+				// calc delta array
+				for (int l = layers.size() - 2; l >= 0; l--) {
+					double[][] deltas2 = Matrix.matMult(Matrix.transpose(layers.get(l + 1).weights), layers.get(l + 1).gradients2);
+					// mult with derivs
+				}
+				
+				// no longer needed
 				for (int n = 0; n < output[i].length; n++) {
 					double delta = output[i][n] - netOutput[n];
 					double deriv = 0;
@@ -129,12 +165,13 @@ public class NeuralNetwork {
 				}
 				// Calculate hidden gradient for each neuron of the hidden
 				// layers
-				for (int l = layers.size() - 2; l > 0; l--) {
+				for (int l = layers.size() - 2; l >= 0; l--) {
 					for (int n = 0; n < layers.get(l).getSize()[1]; n++) {
 						double sum = 0;
 						for (int m = 0; m < layers.get(l + 1).getSize()[1]; m++) {
 							sum += layers.get(l + 1).weights[m][n] * layers.get(l + 1).gradients[m];
 						}
+						System.out.println(sum + " actual");
 						layers.get(l).gradients[n] = sum * layers.get(l).function.derivative(layers.get(l).output[n]);
 					}
 				}
@@ -259,7 +296,7 @@ public class NeuralNetwork {
 	static class Layer {
 		private double[][] weights, deltaWeights;
 		private Activation function;
-		private double[][] bias;
+		private double[][] bias, gradients2;
 		private int[] size;
 		private double[] gradients, output;
 
@@ -274,6 +311,7 @@ public class NeuralNetwork {
 		public Layer(int[] size, Activation fn) {
 			weights = new double[size[1]][size[0]];
 			bias = new double[size[1]][1];
+			gradients2 = new double[size[1]][1];
 			gradients = new double[size[1]];
 			output = new double[size[1]];
 			deltaWeights = new double[size[1]][size[0]];
