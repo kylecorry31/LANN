@@ -10,17 +10,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import com.kylecorry.lann.activation.Activation;
-import com.kylecorry.lann.activation.Sigmoid;
 import com.kylecorry.lann.activation.Softmax;
 import com.kylecorry.matrix.Matrix;
 
 public class NeuralNetwork {
-
-	public static void main(String[] args) {
-		NeuralNetwork net = new NeuralNetwork.Builder().addLayer(new int[] { 1, 2 }, new Sigmoid())
-				.addLayer(new int[] { 2, 2 }, new Sigmoid()).build();
-		net.train(new double[][] { { 1 } }, new double[][] { { 1, 0 } }, 0.1);
-	}
 
 	private ArrayList<Layer> layers;
 
@@ -120,11 +113,8 @@ public class NeuralNetwork {
 			for (int i = 0; i < input.length; i++) {
 				double[] netOutput = this.predict(input[i]);
 				double error = this.crossEntropyError(netOutput, output[i]);
-				// Calculate output gradient for each neuron of the output layer
-				// Calc delta array
 				double[][] deltas = Matrix
 						.transpose(Matrix.matSubt(new double[][] { output[i] }, new double[][] { netOutput }));
-				// Calc deriv array
 				double[][] derivs = new double[netOutput.length][1];
 				for (int d = 0; d < netOutput.length; d++) {
 					if (layers.get(layers.size() - 1).function.getClass().equals(Softmax.class)) {
@@ -138,65 +128,28 @@ public class NeuralNetwork {
 						derivs[d][0] = layers.get(layers.size() - 1).function.derivative(netOutput[d]);
 					}
 				}
-				// calc output gradients
-				layers.get(layers.size() - 1).gradients2 = Matrix.matElementMult(deltas, derivs);
-				// calc delta array
+				layers.get(layers.size() - 1).gradients = Matrix.matElementMult(deltas, derivs);
 				for (int l = layers.size() - 2; l >= 0; l--) {
-					double[][] deltas2 = Matrix.matMult(Matrix.transpose(layers.get(l + 1).weights), layers.get(l + 1).gradients2);
+					double[][] deltas2 = Matrix.matMult(Matrix.transpose(layers.get(l + 1).weights),
+							layers.get(l + 1).gradients);
 					double[][] derivs2 = new double[layers.get(l).getSize()[1]][1];
-					for(int d = 0; d < layers.get(l).getSize()[1]; d++){
+					for (int d = 0; d < layers.get(l).getSize()[1]; d++) {
 						derivs2[d][0] = layers.get(l).function.derivative(layers.get(l).output[d]);
 					}
-					// mult with derivs
-					layers.get(l).gradients2 = Matrix.matElementMult(deltas2, derivs2);
-					
-				}
-				
-				
-				
-				
-				
-				// no longer needed
-				for (int n = 0; n < output[i].length; n++) {
-					double delta = output[i][n] - netOutput[n];
-					double deriv = 0;
-					if (layers.get(layers.size() - 1).function.getClass().equals(Softmax.class)) {
-						double sum = 0;
-						for (int o = 0; o < netOutput.length; o++) {
-							sum += Math.pow(Math.E, netOutput[o]);
-						}
-						deriv = Math.pow(Math.E, netOutput[n]) / sum;
-						deriv = layers.get(layers.size() - 1).function.activate(deriv) - netOutput[n];
-					} else {
-						deriv = layers.get(layers.size() - 1).function.derivative(netOutput[n]);
-					}
-					layers.get(layers.size() - 1).gradients[n] = delta * deriv;
-				}
-				// Calculate hidden gradient for each neuron of the hidden
-				// layers
-				for (int l = layers.size() - 2; l >= 0; l--) {
-					for (int n = 0; n < layers.get(l).getSize()[1]; n++) {
-						double sum = 0;
-						for (int m = 0; m < layers.get(l + 1).getSize()[1]; m++) {
-							sum += layers.get(l + 1).weights[m][n] * layers.get(l + 1).gradients[m];
-						}
-						layers.get(l).gradients[n] = sum * layers.get(l).function.derivative(layers.get(l).output[n]);
-					}
-				}
-				// Update weights
-				for (int l = layers.size() - 1; l > 0; l--) {
-					for (int n = 0; n < layers.get(l).size[1]; n++) {
-						for (int m = 0; m < layers.get(l - 1).output.length; m++) {
-							double oldDeltaWeight = layers.get(l).deltaWeights[n][m];
-							double newDeltaWeight = learningRate * layers.get(l - 1).output[m]
-									* layers.get(l).gradients[n] + 0.7 * oldDeltaWeight;
-							layers.get(l).deltaWeights[n][m] = newDeltaWeight;
-							layers.get(l).weights[n][m] += newDeltaWeight;
-						}
-					}
+					layers.get(l).gradients = Matrix.matElementMult(deltas2, derivs2);
+
 				}
 
-				// Accumulate error
+				for (int l = layers.size() - 1; l > 0; l--) {
+					double[][] oldDeltaWeights = layers.get(l).deltaWeights;
+					double[][] newDeltaWeights = Matrix.matAdd(
+							Matrix.scalarMult(Matrix.matMult(layers.get(l).gradients,
+									new double[][] { layers.get(l - 1).output }), learningRate),
+							Matrix.scalarMult(oldDeltaWeights, 0.7));
+					layers.get(l).deltaWeights = newDeltaWeights;
+					layers.get(l).weights = Matrix.matAdd(layers.get(l).weights, newDeltaWeights);
+
+				}
 				totalError += error;
 			}
 		}
@@ -304,9 +257,9 @@ public class NeuralNetwork {
 	static class Layer {
 		private double[][] weights, deltaWeights;
 		private Activation function;
-		private double[][] bias, gradients2;
+		private double[][] bias, gradients;
 		private int[] size;
-		private double[] gradients, output;
+		private double[] output;
 
 		/**
 		 * Represents a layer in a neural network.
@@ -319,8 +272,7 @@ public class NeuralNetwork {
 		public Layer(int[] size, Activation fn) {
 			weights = new double[size[1]][size[0]];
 			bias = new double[size[1]][1];
-			gradients2 = new double[size[1]][1];
-			gradients = new double[size[1]];
+			gradients = new double[size[1]][1];
 			output = new double[size[1]];
 			deltaWeights = new double[size[1]][size[0]];
 			function = fn;
