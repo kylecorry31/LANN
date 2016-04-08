@@ -23,10 +23,13 @@ public class NeuralNetwork2 {
 
 	public static void main(String[] args) {
 		NeuralNetwork2 net = new NeuralNetwork2.Builder().addLayer(new LayerSize(1, 3), new Linear())
-				.addLayer(new LayerSize(3, 2), new Sigmoid()).build();
-		Matrix2 input = new Matrix2(new double[][] { { 0.2 }, { 0.5 } });
-		Matrix2 output = new Matrix2(new double[][] { { 0.8, 0.3 }, { 0.5, 0.0 } });
-		System.out.println(net.train(input, output, 0.01));
+				.addLayer(new LayerSize(3, 2), new Softmax()).build();
+		Matrix2 input = new Matrix2(new double[][] { { 0.2 }, { 0.6 } });
+		Matrix2 output = new Matrix2(new double[][] { { 1, 0 }, { 0, 1 } });
+		for (int i = 0; i < 100000; i++)
+			System.out.println(net.train(input, output, 0.1));
+		System.out.println(net.predict(new Matrix2(new double[][] { { 0.2 } })));
+		System.out.println(argMax(net.predict(new Matrix2(new double[][] { { 0.2 } }))));
 
 	}
 
@@ -85,18 +88,6 @@ public class NeuralNetwork2 {
 	 *            number of input neurons.
 	 * @return The output of the neural network.
 	 */
-	public double[] predict(double[] input) {
-		if (input.length != layers.get(0).getSize()[0]) {
-			System.err.println("Input size did not match the input size of the first layer.");
-			System.exit(1);
-		}
-		double[][] modInput = Matrix.transpose(new double[][] { input });
-		for (Layer l : layers) {
-			modInput = l.activate(modInput);
-		}
-		return Matrix.transpose(modInput)[0];
-	}
-
 	public Matrix2 predict(Matrix2 input) {
 		if (input.getNumRows() != layers.get(0).getLayerSize().getInputSize()) {
 			throw new InvalidParameterException("Input size did not match the input size of the first layer");
@@ -115,16 +106,9 @@ public class NeuralNetwork2 {
 	 *            The output of the neural network (using Softmax)
 	 * @return The position of the most probable class.
 	 */
-	public static int argMax(double[] output) {
-		int pos = 0;
-		double max = output[0];
-		for (int i = 1; i < output.length; i++) {
-			if (max < output[i]) {
-				max = output[i];
-				pos = i;
-			}
-		}
-		return pos;
+	public static int argMax(Matrix2 output) {
+		double max = output.max();
+		return output.find(max)[0];
 	}
 
 	/**
@@ -139,55 +123,6 @@ public class NeuralNetwork2 {
 	 *            0.01.
 	 * @return The error of the network as an mean cross entropy.
 	 */
-	public double train(double[][] input, double[][] output, double learningRate) {
-		double totalError = 0;
-		if (input.length == output.length) {
-			for (int i = 0; i < input.length; i++) {
-				double[] netOutput = this.predict(input[i]);
-				double error = this.crossEntropyError(netOutput, output[i]);
-				double[][] deltas = Matrix
-						.transpose(Matrix.matSubt(new double[][] { output[i] }, new double[][] { netOutput }));
-				double[][] derivs = new double[netOutput.length][1];
-				for (int d = 0; d < netOutput.length; d++) {
-					if (layers.get(layers.size() - 1).function.getClass().equals(Softmax.class)) {
-						double sum = 0;
-						for (int o = 0; o < netOutput.length; o++) {
-							sum += Math.pow(Math.E, netOutput[o]);
-						}
-						derivs[d][0] = Math.pow(Math.E, netOutput[d]) / sum;
-						derivs[d][0] = layers.get(layers.size() - 1).function.activate(derivs[d][0]) - netOutput[d];
-					} else {
-						derivs[d][0] = layers.get(layers.size() - 1).function.derivative(netOutput[d]);
-					}
-				}
-				layers.get(layers.size() - 1).gradients = Matrix.matElementMult(deltas, derivs);
-				for (int l = layers.size() - 2; l >= 0; l--) {
-					double[][] deltas2 = Matrix.matMult(Matrix.transpose(layers.get(l + 1).weights),
-							layers.get(l + 1).gradients);
-					double[][] derivs2 = new double[layers.get(l).getSize()[1]][1];
-					for (int d = 0; d < layers.get(l).getSize()[1]; d++) {
-						derivs2[d][0] = layers.get(l).function.derivative(layers.get(l).output[d]);
-					}
-					layers.get(l).gradients = Matrix.matElementMult(deltas2, derivs2);
-
-				}
-
-				for (int l = layers.size() - 1; l > 0; l--) {
-					double[][] oldDeltaWeights = layers.get(l).deltaWeights;
-					double[][] newDeltaWeights = Matrix.matAdd(
-							Matrix.scalarMult(Matrix.matMult(layers.get(l).gradients,
-									new double[][] { layers.get(l - 1).output }), learningRate),
-							Matrix.scalarMult(oldDeltaWeights, 0.7));
-					layers.get(l).deltaWeights = newDeltaWeights;
-					layers.get(l).weights = Matrix.matAdd(layers.get(l).weights, newDeltaWeights);
-
-				}
-				totalError += error;
-			}
-		}
-		return totalError / input.length;
-	}
-
 	public double train(Matrix2 input, Matrix2 output, double learningRate) {
 		double totalError = 0;
 		if (input.getNumRows() == output.getNumRows()) {
@@ -197,14 +132,13 @@ public class NeuralNetwork2 {
 				Matrix2 netOutput = this.predict(inputRow);
 				for (int l = layers.size() - 1; l > 0; l--) {
 					layers.get(l).dWeightsMatrix = outputRow.subtract(netOutput).multiply(-1);
-					for (int j = layers.size()-1; j >= l; j--) { // bad
+					for (int j = layers.size() - 1; j >= l; j--) { // bad
 						layers.get(l).dWeightsMatrix = layers.get(l).dWeightsMatrix
-								.multiply(layers.get(j).applyFunctionDerivative(layers.get(j).inputMatrix).transpose());
-						System.out.println(layers.get(l).dWeightsMatrix); 
+								.elementWiseMultiply(layers.get(j).applyFunctionDerivative(layers.get(j).inputMatrix));
 					}
-					layers.get(l).dWeightsMatrix = layers.get(l).dWeightsMatrix.multiply(layers.get(l-1).outputMatrix);
+					layers.get(l).dWeightsMatrix = layers.get(l).dWeightsMatrix
+							.multiply(layers.get(l - 1).outputMatrix.transpose()).multiply(learningRate);
 					layers.get(l).weightMatrix = layers.get(l).weightMatrix.subtract(layers.get(l).dWeightsMatrix);
-//					System.out.println(layers.get(l).weightMatrix);
 					double error = squaredError(predict(inputRow), outputRow);
 					totalError += error;
 				}
@@ -368,11 +302,18 @@ public class NeuralNetwork2 {
 		public Matrix2 applyFunctionDerivative(Matrix2 input) {
 			Matrix2 activated = (Matrix2) input.clone();
 			for (int row = 0; row < input.getNumRows(); row++)
-				for (int col = 0; col < input.getNumCols(); col++)
-					activated.set(row, col, function.derivative(input.get(row, col)));
+				for (int col = 0; col < input.getNumCols(); col++) {
+					if (function instanceof Softmax)
+						activated.set(row, col, Math.pow(Math.E, input.get(row, col)));
+					else
+						activated.set(row, col, function.derivative(input.get(row, col)));
+				}
 			if (function instanceof Softmax) {
 				double sum = activated.sum();
-				activated.multiply(1 / sum);
+				activated = activated.multiply(1 / sum);
+				for (int row = 0; row < input.getNumRows(); row++)
+					for (int col = 0; col < input.getNumCols(); col++)
+						activated.set(row, col, function.activate(activated.get(row, col)) - input.get(row, col));
 			}
 			return activated;
 		}
@@ -391,7 +332,7 @@ public class NeuralNetwork2 {
 					activated.set(row, col, function.activate(input.get(row, col)));
 			if (function instanceof Softmax) {
 				double sum = activated.sum();
-				activated.multiply(1 / sum);
+				activated = activated.multiply(1 / sum);
 			}
 			return activated;
 		}
