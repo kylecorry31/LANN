@@ -197,13 +197,16 @@ public class NeuralNetwork2 {
 				Matrix2 netOutput = this.predict(inputRow);
 				for (int l = layers.size() - 1; l > 0; l--) {
 					layers.get(l).dWeightsMatrix = outputRow.subtract(netOutput).multiply(-1);
-					System.out.println(layers.get(l).dWeightsMatrix); // Good
-					for (int j = layers.size() - 1; j >= l; j--) { // bad
+					for (int j = layers.size()-1; j >= l; j--) { // bad
 						layers.get(l).dWeightsMatrix = layers.get(l).dWeightsMatrix
 								.multiply(layers.get(j).applyFunctionDerivative(layers.get(j).inputMatrix).transpose());
+						System.out.println(layers.get(l).dWeightsMatrix); 
 					}
-					layers.get(l).dWeightsMatrix = layers.get(l).dWeightsMatrix.multiply(layers.get(l-1).outputMatrix.transpose());
-//					layers.get(l).weightMatrix = layers.get(l).weightMatrix.subtract(layers.get(l).dWeightsMatrix);
+					layers.get(l).dWeightsMatrix = layers.get(l).dWeightsMatrix.multiply(layers.get(l-1).outputMatrix);
+					layers.get(l).weightMatrix = layers.get(l).weightMatrix.subtract(layers.get(l).dWeightsMatrix);
+//					System.out.println(layers.get(l).weightMatrix);
+					double error = squaredError(predict(inputRow), outputRow);
+					totalError += error;
 				}
 			}
 		}
@@ -377,7 +380,7 @@ public class NeuralNetwork2 {
 		public Matrix2 activate(Matrix2 input) {
 			inputMatrix = input;
 			Matrix2 y = applyFunction(weightMatrix.multiply(input).add(biasMatrix));
-			outputMatrix = y.transpose();
+			outputMatrix = y;
 			return y;
 		}
 
