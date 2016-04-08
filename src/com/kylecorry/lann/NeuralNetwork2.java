@@ -6,10 +6,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import com.kylecorry.lann.activation.Activation;
+import com.kylecorry.lann.activation.Linear;
+import com.kylecorry.lann.activation.Sigmoid;
 import com.kylecorry.lann.activation.Softmax;
 import com.kylecorry.matrix.Matrix;
 import com.kylecorry.matrix.Matrix2;
@@ -17,6 +20,16 @@ import com.kylecorry.matrix.Matrix2;
 public class NeuralNetwork2 {
 
 	private ArrayList<Layer> layers;
+
+	public static void main(String[] args) {
+		NeuralNetwork2 net = new NeuralNetwork2.Builder().addLayer(new LayerSize(1, 3), new Linear())
+				.addLayer(new LayerSize(3, 2), new Sigmoid()).build();
+		Matrix2 input = new Matrix2(new double[][] { { 0.2 }, { 0.5 } });
+		Matrix2 output = new Matrix2(new double[][] { { 0.8, 0.3 }, { 0.5, 0.0 } });
+		System.out.println(net.predict(new Matrix2(new double[][] { { 0.2 } })));
+		System.out.println(net.train(input, output, 0.01));
+
+	}
 
 	/**
 	 * A representation of a Feed-Forward neural network.
@@ -32,7 +45,8 @@ public class NeuralNetwork2 {
 	 *            The layer to add to the neural network.
 	 */
 	private void addLayer(Layer l) {
-		if (layers.size() == 0 || layers.get(layers.size() - 1).getSize()[1] == l.getSize()[0]) {
+		if (layers.size() == 0
+				|| layers.get(layers.size() - 1).getLayerSize().getOutputSize() == l.getLayerSize().getInputSize()) {
 			layers.add(l);
 		} else {
 			System.err.println("Layer input did not match the output of the last layer.");
@@ -57,6 +71,13 @@ public class NeuralNetwork2 {
 		return -sum;
 	}
 
+	public double squaredError(Matrix2 netOutput, Matrix2 expectedOutput) {
+		double sum = 0;
+		for (int i = 0; i < netOutput.getNumRows(); i++)
+			sum += 0.5 * Math.pow(expectedOutput.get(i, 0) - netOutput.get(i, 0), 2);
+		return sum;
+	}
+
 	/**
 	 * Give a prediction based on some input.
 	 * 
@@ -75,6 +96,17 @@ public class NeuralNetwork2 {
 			modInput = l.activate(modInput);
 		}
 		return Matrix.transpose(modInput)[0];
+	}
+
+	public Matrix2 predict(Matrix2 input) {
+		if (input.getNumRows() != layers.get(0).getLayerSize().getInputSize()) {
+			throw new InvalidParameterException("Input size did not match the input size of the first layer");
+		}
+		Matrix2 modInput = input.transpose();
+		for (Layer l : layers) {
+			modInput = l.activate(modInput);
+		}
+		return modInput.transpose();
 	}
 
 	/**
@@ -157,6 +189,23 @@ public class NeuralNetwork2 {
 		return totalError / input.length;
 	}
 
+	public double train(Matrix2 input, Matrix2 output, double learningRate) {
+		double totalError = 0;
+		if (input.getNumRows() == output.getNumRows()) {
+			for (int i = 0; i < input.getNumRows(); i++) {
+				Matrix2 inputRow = new Matrix2(new double[][] { input.getRow(i) });
+				Matrix2 outputRow = new Matrix2(new double[][] { output.getRow(i) });
+				Matrix2 netOutput = this.predict(inputRow);
+				for (int l = layers.size() - 1; l > 1; l--) {
+					layers.get(l).dWeightsMatrix = outputRow.subtract(netOutput)
+							.multiply(layers.get(l - 1).outputMatrix)
+							.multiply(layers.get(l - 2).outputMatrix.transpose());
+				}
+			}
+		}
+		return totalError;
+	}
+
 	/**
 	 * Saves the neural network to a file (CSV).
 	 * 
@@ -236,11 +285,11 @@ public class NeuralNetwork2 {
 		 * Adds a layer to the neural network.
 		 * 
 		 * @param size
-		 *            The size of the layer in this format: [input, output]
+		 *            The size of the layer.
 		 * @param function
 		 *            The activation function of the layer.
 		 */
-		public NeuralNetwork2.Builder addLayer(int[] size, Activation function) {
+		public NeuralNetwork2.Builder addLayer(LayerSize size, Activation function) {
 			Layer l = new Layer(size, function);
 			net.addLayer(l);
 			return this;
@@ -255,7 +304,7 @@ public class NeuralNetwork2 {
 
 	}
 
-	class LayerSize {
+	static class LayerSize {
 		private int input, output;
 
 		public LayerSize(int input, int output) {
@@ -285,52 +334,45 @@ public class NeuralNetwork2 {
 		 * Represents a layer in a neural network.
 		 * 
 		 * @param size
-		 *            The size of the layer in this format: [input, output]
+		 *            The size of the layer.
 		 * @param function
 		 *            The activation function for the neurons in this layer.
 		 */
-		public Layer(int[] size, Activation fn) {
-			weights = new double[size[1]][size[0]];
-			bias = new double[size[1]][1];
-			gradients = new double[size[1]][1];
-			output = new double[size[1]];
-			deltaWeights = new double[size[1]][size[0]];
-			function = fn;
-			this.size = size;
-			initializeWeights();
-			initializeBias();
-		}
-
 		public Layer(LayerSize size, Activation fn) {
 			weightMatrix = new Matrix2(size.getOutputSize(), size.getInputSize());
-			biasMatrix = new Matrix2(size.getOutputSize(), 1);
+			biasMatrix = new Matrix2(size.getOutputSize(), 1, 0.1);
 			gradientsMatrix = new Matrix2(size.getOutputSize(), 1);
 			outputMatrix = new Matrix2(size.getOutputSize(), 1);
 			dWeightsMatrix = new Matrix2(size.getOutputSize(), size.getInputSize());
+			function = fn;
+			layerSize = size;
+			weightMatrix = createRandomMatrix(size.getOutputSize(), size.getInputSize());
 		}
 
-		/**
-		 * Initializes the layer's weights to random double values between 0 and
-		 * 1.
-		 */
-		private void initializeWeights() {
-			for (int i = 0; i < weights.length; i++) {
-				for (int j = 0; j < weights[i].length; j++) {
-					weights[i][j] = Math.random();
-				}
-			}
+		private Matrix2 createRandomMatrix(int rows, int cols) {
+			Matrix2 random = new Matrix2(rows, cols);
+			for (int row = 0; row < rows; row++)
+				for (int col = 0; col < cols; col++)
+					random.set(row, col, Math.random());
+			return random;
 		}
 
-		/**
-		 * Initializes the layer's bias neurons to random double values between
-		 * 0 and 1.
-		 */
-		private void initializeBias() {
-			for (int i = 0; i < bias.length; i++) {
-				for (int j = 0; j < bias[i].length; j++) {
-					bias[i][j] = 0.1;
-				}
+		public Matrix2 activate(Matrix2 input) {
+			Matrix2 y = applyFunction(weightMatrix.multiply(input).add(biasMatrix));
+			outputMatrix = y.transpose();
+			return y;
+		}
+
+		public Matrix2 applyFunction(Matrix2 input) {
+			Matrix2 activated = (Matrix2) input.clone();
+			for (int row = 0; row < input.getNumRows(); row++)
+				for (int col = 0; col < input.getNumCols(); col++)
+					activated.set(row, col, function.activate(input.get(row, col)));
+			if (function instanceof Softmax) {
+				double sum = activated.sum();
+				activated.multiply(1 / sum);
 			}
+			return activated;
 		}
 
 		/**
@@ -382,6 +424,10 @@ public class NeuralNetwork2 {
 		 */
 		public int[] getSize() {
 			return size;
+		}
+
+		public LayerSize getLayerSize() {
+			return layerSize;
 		}
 
 	}
