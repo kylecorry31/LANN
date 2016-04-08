@@ -26,7 +26,6 @@ public class NeuralNetwork2 {
 				.addLayer(new LayerSize(3, 2), new Sigmoid()).build();
 		Matrix2 input = new Matrix2(new double[][] { { 0.2 }, { 0.5 } });
 		Matrix2 output = new Matrix2(new double[][] { { 0.8, 0.3 }, { 0.5, 0.0 } });
-		System.out.println(net.predict(new Matrix2(new double[][] { { 0.2 } })));
 		System.out.println(net.train(input, output, 0.01));
 
 	}
@@ -106,7 +105,7 @@ public class NeuralNetwork2 {
 		for (Layer l : layers) {
 			modInput = l.activate(modInput);
 		}
-		return modInput.transpose();
+		return modInput;
 	}
 
 	/**
@@ -193,13 +192,18 @@ public class NeuralNetwork2 {
 		double totalError = 0;
 		if (input.getNumRows() == output.getNumRows()) {
 			for (int i = 0; i < input.getNumRows(); i++) {
-				Matrix2 inputRow = new Matrix2(new double[][] { input.getRow(i) });
-				Matrix2 outputRow = new Matrix2(new double[][] { output.getRow(i) });
+				Matrix2 inputRow = new Matrix2(new double[][] { input.getRow(i) }).transpose();
+				Matrix2 outputRow = new Matrix2(new double[][] { output.getRow(i) }).transpose();
 				Matrix2 netOutput = this.predict(inputRow);
-				for (int l = layers.size() - 1; l > 1; l--) {
-					layers.get(l).dWeightsMatrix = outputRow.subtract(netOutput)
-							.multiply(layers.get(l - 1).outputMatrix)
-							.multiply(layers.get(l - 2).outputMatrix.transpose());
+				for (int l = layers.size() - 1; l > 0; l--) {
+					layers.get(l).dWeightsMatrix = outputRow.subtract(netOutput).multiply(-1);
+					System.out.println(layers.get(l).dWeightsMatrix); // Good
+					for (int j = layers.size() - 1; j >= l; j--) { // bad
+						layers.get(l).dWeightsMatrix = layers.get(l).dWeightsMatrix
+								.multiply(layers.get(j).applyFunctionDerivative(layers.get(j).inputMatrix).transpose());
+					}
+					layers.get(l).dWeightsMatrix = layers.get(l).dWeightsMatrix.multiply(layers.get(l-1).outputMatrix.transpose());
+//					layers.get(l).weightMatrix = layers.get(l).weightMatrix.subtract(layers.get(l).dWeightsMatrix);
 				}
 			}
 		}
@@ -322,7 +326,7 @@ public class NeuralNetwork2 {
 	}
 
 	static class Layer {
-		private Matrix2 weightMatrix, dWeightsMatrix, biasMatrix, gradientsMatrix, outputMatrix;
+		private Matrix2 weightMatrix, dWeightsMatrix, biasMatrix, gradientsMatrix, outputMatrix, inputMatrix;
 		private double[][] weights, deltaWeights;
 		private Activation function;
 		private double[][] bias, gradients;
@@ -343,6 +347,7 @@ public class NeuralNetwork2 {
 			biasMatrix = new Matrix2(size.getOutputSize(), 1, 0.1);
 			gradientsMatrix = new Matrix2(size.getOutputSize(), 1);
 			outputMatrix = new Matrix2(size.getOutputSize(), 1);
+			inputMatrix = new Matrix2(size.getInputSize(), 1);
 			dWeightsMatrix = new Matrix2(size.getOutputSize(), size.getInputSize());
 			function = fn;
 			layerSize = size;
@@ -357,7 +362,20 @@ public class NeuralNetwork2 {
 			return random;
 		}
 
+		public Matrix2 applyFunctionDerivative(Matrix2 input) {
+			Matrix2 activated = (Matrix2) input.clone();
+			for (int row = 0; row < input.getNumRows(); row++)
+				for (int col = 0; col < input.getNumCols(); col++)
+					activated.set(row, col, function.derivative(input.get(row, col)));
+			if (function instanceof Softmax) {
+				double sum = activated.sum();
+				activated.multiply(1 / sum);
+			}
+			return activated;
+		}
+
 		public Matrix2 activate(Matrix2 input) {
+			inputMatrix = input;
 			Matrix2 y = applyFunction(weightMatrix.multiply(input).add(biasMatrix));
 			outputMatrix = y.transpose();
 			return y;
