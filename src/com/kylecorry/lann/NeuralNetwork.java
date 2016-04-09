@@ -10,8 +10,6 @@ import java.security.InvalidParameterException;
 import java.util.ArrayList;
 
 import com.kylecorry.lann.activation.Activation;
-import com.kylecorry.lann.activation.Linear;
-import com.kylecorry.lann.activation.Sigmoid;
 import com.kylecorry.lann.activation.Softmax;
 import com.kylecorry.matrix.Matrix;
 
@@ -46,13 +44,14 @@ public class NeuralNetwork {
 	/**
 	 * Calculate the cross entropy error of the neural network.
 	 * 
+	 * @param x
+	 *            The input to the neural network.
 	 * @param y
-	 *            The output of the neural network.
-	 * @param y_
-	 *            The actual expected output.
+	 *            The expected output.
 	 * @return The cross entropy error.
 	 */
-	public double crossEntropyError(Matrix y, Matrix y_) {
+	public double crossEntropyError(Matrix x, Matrix y) {
+		Matrix y_ = predict(x);
 		double j = y_.multiply(y.map(new Matrix.Function() {
 			@Override
 			public double function(double x) {
@@ -65,13 +64,14 @@ public class NeuralNetwork {
 	/**
 	 * Calculate the squared error of the neural network.
 	 * 
+	 * @param x
+	 *            The input to the neural network.
 	 * @param y
-	 *            The output of the neural network.
-	 * @param y_
-	 *            The actual expected output.
+	 *            The expected output.
 	 * @return The squared error.
 	 */
-	public double squaredError(Matrix y, Matrix y_) {
+	public double squaredError(Matrix x, Matrix y) {
+		Matrix y_ = predict(x);
 		double sumSquareWeights = 0;
 		for (Layer layer : layers)
 			sumSquareWeights += layer.weightMatrix.power(2).sum();
@@ -145,7 +145,7 @@ public class NeuralNetwork {
 							.add(layers.get(l).weightMatrix.multiply(lambda));
 					layers.get(l).weightMatrix = layers.get(l).weightMatrix.subtract(change.multiply(learningRate));
 				}
-				double error = squaredError(predict(inputRow), outputRow);
+				double error = squaredError(inputRow, outputRow);
 				totalError += error;
 			}
 		}
