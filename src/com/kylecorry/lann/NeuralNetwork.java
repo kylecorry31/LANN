@@ -1,6 +1,7 @@
 package com.kylecorry.lann;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -155,6 +156,27 @@ public class NeuralNetwork {
 	/**
 	 * Saves the neural network to a file (CSV).
 	 * 
+	 * @param file
+	 *            The file in which to save the weights to.
+	 */
+	public void save(File file) {
+		PrintWriter printWriter;
+		try {
+			printWriter = new PrintWriter(file, "UTF-8");
+			for (Layer l : layers) {
+				printWriter.println(l.weightMatrix.toString().replace("\n", ""));
+			}
+			printWriter.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Saves the neural network to a file (CSV).
+	 * 
 	 * @param filename
 	 *            The filename in which to save the weights to.
 	 */
@@ -169,6 +191,44 @@ public class NeuralNetwork {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Loads a neural network from a file.
+	 * 
+	 * @param file
+	 *            The file to retrieve the weights from.
+	 */
+	public void load(File file) {
+		BufferedReader br;
+		try {
+			br = new BufferedReader(new FileReader(file));
+
+			StringBuilder sb = new StringBuilder();
+			String line = br.readLine();
+
+			while (line != null) {
+				sb.append(line);
+				sb.append(System.lineSeparator());
+				line = br.readLine();
+			}
+			br.close();
+			String everything = sb.toString();
+			String[] strLayers = everything.split("\n");
+			for (int i = 0; i < strLayers.length; i++) {
+				String[] rows = strLayers[i].split("\\]\\[");
+				for (int r = 0; r < rows.length; r++) {
+					String[] cols = rows[r].replace("[", "").replace("]", "").split(", ");
+					for (int c = 0; c < cols.length; c++) {
+						layers.get(i).weightMatrix.set(r, c, Double.parseDouble(cols[c]));
+					}
+				}
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
