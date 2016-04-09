@@ -53,11 +53,13 @@ public class NeuralNetwork {
 	 * @return The cross entropy error.
 	 */
 	public double crossEntropyError(Matrix y, Matrix y_) {
-		double sum = 0;
-		for (int row = 0; row < y.getNumRows(); row++)
-			for (int col = 0; col < y_.getNumCols(); col++)
-				sum += y_.get(row, col) * Math.log(y.get(row, col));
-		return -sum;
+		double j = y_.multiply(y.map(new Matrix.Function() {
+			@Override
+			public double function(double x) {
+				return Math.log(x);
+			}
+		})).sum();
+		return -j;
 	}
 
 	/**
