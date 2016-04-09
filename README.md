@@ -2,7 +2,7 @@
 
 > Lightweight artificial neural network implementation for Java.
 
-![LANN](http://kylecorry31.github.io/res/images/LANN.jpg)
+![LANN](https://raw.githubusercontent.com/kylecorry31/LANN/master/LANN.jpg)
 
 ## Features
 
