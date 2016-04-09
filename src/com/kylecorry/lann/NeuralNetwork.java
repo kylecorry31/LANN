@@ -18,6 +18,7 @@ import com.kylecorry.matrix.Matrix;
 public class NeuralNetwork {
 
 	private ArrayList<Layer> layers;
+	private double lambda = 0;
 
 	/**
 	 * A representation of a Feed-Forward neural network.
@@ -51,11 +52,11 @@ public class NeuralNetwork {
 	 *            The actual expected output.
 	 * @return The cross entropy error.
 	 */
-	public double crossEntropyError(Matrix netOutput, Matrix expectedOutput) {
+	public double crossEntropyError(Matrix y, Matrix y_) {
 		double sum = 0;
-		for (int row = 0; row < netOutput.getNumRows(); row++)
-			for (int col = 0; col < expectedOutput.getNumCols(); col++)
-				sum += expectedOutput.get(row, col) * Math.log(netOutput.get(row, col));
+		for (int row = 0; row < y.getNumRows(); row++)
+			for (int col = 0; col < y_.getNumCols(); col++)
+				sum += y_.get(row, col) * Math.log(y.get(row, col));
 		return -sum;
 	}
 
@@ -69,10 +70,12 @@ public class NeuralNetwork {
 	 * @return The squared error.
 	 */
 	public double squaredError(Matrix y, Matrix y_) {
-		double sum = 0;
-		for (int i = 0; i < y.getNumRows(); i++)
-			sum += 0.5 * Math.pow(y_.get(i, 0) - y.get(i, 0), 2);
-		return sum;
+		double sumSquareWeights = 0;
+		for (Layer layer : layers)
+			sumSquareWeights += layer.weightMatrix.power(2).sum();
+		double j = 0.5 * y_.subtract(y).power(2).sum() / layers.get(0).getLayerSize().getInputSize()
+				+ lambda / 2 * sumSquareWeights;
+		return j;
 	}
 
 	/**
@@ -128,14 +131,16 @@ public class NeuralNetwork {
 				// Output layer
 				Matrix previousDelta = outputRow.subtract(netOutput).multiply(-1).multiply(layers.get(layers.size() - 1)
 						.applyFunctionDerivative(layers.get(layers.size() - 1).inputMatrix));
-				Matrix change = previousDelta.dot(layers.get(layers.size() - 2).outputMatrix.transpose());
+				Matrix change = previousDelta.dot(layers.get(layers.size() - 2).outputMatrix.transpose())
+						.add(layers.get(layers.size() - 1).weightMatrix.multiply(lambda));
 				layers.get(layers.size() - 1).weightMatrix = layers.get(layers.size() - 1).weightMatrix
 						.subtract(change.multiply(learningRate));
 				// Hidden layers
 				for (int l = layers.size() - 2; l > 0; l--) {
 					previousDelta = layers.get(l + 1).weightMatrix.transpose().dot(previousDelta)
 							.multiply(layers.get(l).applyFunctionDerivative(layers.get(l).inputMatrix));
-					change = previousDelta.dot(layers.get(l - 1).outputMatrix.transpose());
+					change = previousDelta.dot(layers.get(l - 1).outputMatrix.transpose())
+							.add(layers.get(l).weightMatrix.multiply(lambda));
 					layers.get(l).weightMatrix = layers.get(l).weightMatrix.subtract(change.multiply(learningRate));
 				}
 				double error = squaredError(predict(inputRow), outputRow);
@@ -225,6 +230,11 @@ public class NeuralNetwork {
 		public NeuralNetwork.Builder addLayer(int input, int output, Activation function) {
 			Layer l = new Layer(new LayerSize(input, output), function);
 			net.addLayer(l);
+			return this;
+		}
+
+		public NeuralNetwork.Builder setRegularization(double lambda) {
+			net.lambda = lambda;
 			return this;
 		}
 
