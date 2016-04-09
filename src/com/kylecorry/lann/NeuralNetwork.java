@@ -10,6 +10,8 @@ import java.security.InvalidParameterException;
 import java.util.ArrayList;
 
 import com.kylecorry.lann.activation.Activation;
+import com.kylecorry.lann.activation.Linear;
+import com.kylecorry.lann.activation.Sigmoid;
 import com.kylecorry.lann.activation.Softmax;
 import com.kylecorry.matrix.Matrix;
 
@@ -220,8 +222,8 @@ public class NeuralNetwork {
 		 * @param function
 		 *            The activation function of the layer.
 		 */
-		public NeuralNetwork.Builder addLayer(LayerSize size, Activation function) {
-			Layer l = new Layer(size, function);
+		public NeuralNetwork.Builder addLayer(int input, int output, Activation function) {
+			Layer l = new Layer(new LayerSize(input, output), function);
 			net.addLayer(l);
 			return this;
 		}
@@ -312,7 +314,8 @@ public class NeuralNetwork {
 				}
 			if (function instanceof Softmax) {
 				double sum = activated.sum();
-				activated = activated.multiply(1 / sum);
+				if (sum != 0)
+					activated = activated.multiply(1 / sum);
 				for (int row = 0; row < input.getNumRows(); row++)
 					for (int col = 0; col < input.getNumCols(); col++)
 						activated.set(row, col, function.activate(activated.get(row, col)) - input.get(row, col));
@@ -348,7 +351,8 @@ public class NeuralNetwork {
 					activated.set(row, col, function.activate(input.get(row, col)));
 			if (function instanceof Softmax) {
 				double sum = activated.sum();
-				activated = activated.multiply(1 / sum);
+				if (sum != 0)
+					activated = activated.multiply(1 / sum);
 			}
 			return activated;
 		}
