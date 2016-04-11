@@ -93,7 +93,7 @@ public class NeuralNetwork {
 		if (input.getNumRows() != layers.get(0).getLayerSize().getInputSize()) {
 			throw new InvalidParameterException("Input size did not match the input size of the first layer");
 		}
-		Matrix modInput = input.transpose();
+		Matrix modInput = (Matrix) input.clone();
 		for (Layer l : layers) {
 			modInput = l.activate(modInput);
 		}
@@ -110,6 +110,18 @@ public class NeuralNetwork {
 	public static int argMax(Matrix output) {
 		double max = output.max();
 		return output.find(max)[0];
+	}
+
+	public Matrix getWeights(int layer) {
+		return (Matrix) layers.get(layer).weightMatrix.clone();
+	}
+
+	public void setWeights(int layer, Matrix weights) {
+		layers.get(layer).weightMatrix = (Matrix) weights.clone();
+	}
+
+	public int size() {
+		return layers.size();
 	}
 
 	/**
