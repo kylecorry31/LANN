@@ -12,6 +12,7 @@ public class GeneticTrainingAlgorithm {
 	private HashMap<NeuralNetwork, Double> genes;
 	private double learningRate;
 	private double mutationRate;
+	private boolean keepBest;
 
 //	public static void main(String[] args) {
 //		GeneticTrainingAlgorithm gta = new GeneticTrainingAlgorithm(new int[] { 2, 3, 2 }, 15, 0.1, 0.75, true);
@@ -42,14 +43,14 @@ public class GeneticTrainingAlgorithm {
 	}
 
 	public GeneticTrainingAlgorithm(int[] topology, int numGenes, double learningRate, double mutation,
-			boolean classify) {
+			boolean classify, boolean keepBest) {
 		genes = new HashMap<NeuralNetwork, Double>();
 		for (int i = 0; i < numGenes; i++) {
 			NeuralNetwork.Builder netBuilder = new NeuralNetwork.Builder();
 			for (int t = 1; t < topology.length; t++) {
 				if (t == 1)
 					netBuilder.addLayer(topology[t - 1], topology[t], new Linear());
-				else if (t == numGenes - 1 && classify)
+				else if (t == topology.length - 1 && classify)
 					netBuilder.addLayer(topology[t - 1], topology[t], new Softmax());
 				else
 					netBuilder.addLayer(topology[t - 1], topology[t], new Sigmoid());
@@ -57,6 +58,7 @@ public class GeneticTrainingAlgorithm {
 			genes.put(netBuilder.build(), 0.0);
 			this.learningRate = learningRate;
 			this.mutationRate = mutation;
+			this.keepBest = keepBest;
 		}
 	}
 
@@ -70,7 +72,12 @@ public class GeneticTrainingAlgorithm {
 
 	public void evolve(boolean max) {
 		NeuralNetwork best = best(max);
+		int count = 0;
 		for (NeuralNetwork net : genes.keySet()) {
+			if(count == 0 && keepBest){
+				net = best;
+				continue;
+			}
 			for (int i = 0; i < net.size(); i++) {
 				if (Math.random() < mutationRate)
 					net.setWeights(i, best.getWeights(i).add((Math.random() * 2 - 1) * learningRate));
@@ -78,6 +85,7 @@ public class GeneticTrainingAlgorithm {
 					net.setWeights(i, best.getWeights(i));
 			}
 			genes.put(net, 0.0);
+			count++;
 		}
 	}
 

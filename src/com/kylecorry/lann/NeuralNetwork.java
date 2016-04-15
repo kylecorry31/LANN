@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidParameterException;
@@ -207,6 +209,39 @@ public class NeuralNetwork {
 		}
 	}
 
+	public void load(InputStream is) {
+		BufferedReader br;
+		try {
+			br = new BufferedReader(new InputStreamReader(is, "utf-8"));
+
+			StringBuilder sb = new StringBuilder();
+			String line = br.readLine();
+
+			while (line != null) {
+				sb.append(line);
+				sb.append(System.lineSeparator());
+				line = br.readLine();
+			}
+			br.close();
+			String everything = sb.toString();
+			String[] strLayers = everything.split("\n");
+			for (int i = 0; i < strLayers.length; i++) {
+				String[] rows = strLayers[i].split("\\]\\[");
+				for (int r = 0; r < rows.length; r++) {
+					String[] cols = rows[r].replace("[", "").replace("]", "").split(", ");
+					for (int c = 0; c < cols.length; c++) {
+						layers.get(i).weightMatrix.set(r, c, Double.parseDouble(cols[c]));
+					}
+				}
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	
 	/**
 	 * Loads a neural network from a file.
 	 * 
