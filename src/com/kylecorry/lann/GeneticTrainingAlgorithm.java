@@ -62,6 +62,13 @@ public class GeneticTrainingAlgorithm {
 		}
 	}
 
+	public void load(String filename){
+		NeuralNetwork net = genes.keySet().iterator().next();
+		net.load(filename);
+		setFitness(net, 100000);
+		evolve(true);
+	}
+	
 	public void setFitness(NeuralNetwork net, double score) {
 		genes.put(net, score);
 	}
