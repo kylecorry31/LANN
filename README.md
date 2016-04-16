@@ -28,7 +28,7 @@ Download the .jar file from the [releases page](https://github.com/kylecorry31/L
 #### Gongolierium!
 This project used reinforcement learning (with the genetic algorithm) to learn how to play a game.
 [YouTube](https://www.youtube.com/watch?v=xuG64aZXZtI)
-![Gongolierium!](https://raw.githubusercontent.com/kylecorry31/LANN/master/Gongolierium.jpg)
+![Gongolierium!](https://raw.githubusercontent.com/kylecorry31/LANN/master/Gongolierium.png)
 
 ### Example - Hiking Based on Weather
 
