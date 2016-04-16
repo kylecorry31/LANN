@@ -6,9 +6,12 @@
 
 ## Features
 
-* Feedforward prediction
-* Backprop training
+* Feedforward prediction - classification / regression
+* Backprop training - supervised learning
+* Genetic training - reinforcement learning
 * Scalable design - create as many neurons / layers as needed
+* Numerous activation functions
+* Matrix library
 
 ## Documentation
 * [Javadocs](http://kylecorry31.github.io/LANN)
@@ -18,15 +21,22 @@
 
 ### Download
 
-Download the .jar file from the [releases page](https://github.com/kylecorry31/Kynet/releases) and add it to the build path of your Java project. (Supports JDK 1.6+)
+Download the .jar file from the [releases page](https://github.com/kylecorry31/LANN/releases) and add it to the build path of your Java project. (Supports JDK 1.6+)
+
+### Projects
+
+#### Gongolierium!
+This project used reinforcement learning (with the genetic algorithm) to learn how to play a game.
+[YouTube](https://www.youtube.com/watch?v=xuG64aZXZtI)
+![Gongolierium!](https://raw.githubusercontent.com/kylecorry31/LANN/master/Gongolierium.jpg)
 
 ### Example - Hiking Based on Weather
 
 ```java
 		// Create
 		NeuralNetwork net = new NeuralNetwork.Builder()
-				.addLayer(new int[] { 7, 10 }, new Sigmoid())
-				.addLayer(new int[] { 10, 2 }, new Softmax())
+				.addLayer(7, 10, new Sigmoid())
+				.addLayer(10, 2, new Softmax())
 				.build();
 
 		// Training input
@@ -46,15 +56,18 @@ Download the .jar file from the [releases page](https://github.com/kylecorry31/K
 		double output[][] = new double[][] { { 1, 0 }, { 1, 0 }, { 0, 1 }, { 0, 1 }, { 0, 1 }, { 0, 1 }, { 1, 0 },
 				{ 0, 1 }, { 1, 0 }, { 0, 1 } };
 
+		Matrix inputMatrix = new Matrix(input);
+		Matrix outputMatrix = new Matrix(output);
+
 		// Train
 		for (int i = 0; i < 1000; i++)
-			net.train(input, output, 0.01);
+			net.train(inputMatrix, outputMatrix, 0.01);
 
 		// Save
 		net.save("hike.csv");
 
 		// Predict
 		System.out.println(NeuralNetwork.argMax(net.predict(
-				new double[] { 82.81, 65 / 100., 1015 / 1013.25, 81.14, 62.08, 985.59 / 1013.25, 46 / 100. })));
+				new Matrix(new double[][] {{ 82.81, 65 / 100., 1015 / 1013.25, 81.14, 62.08, 985.59 / 1013.25, 46 / 100. }}).transpose())));
 
 ```
