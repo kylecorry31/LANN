@@ -17,18 +17,20 @@
 * [Javadocs](http://kylecorry31.github.io/LANN)
 * Uses [Semantic Versioning](http://semver.org/)
 
+## Projects
+
+### Gongolierium!
+This project used reinforcement learning (with the genetic algorithm) to learn how to play a game.
+
+[YouTube](https://www.youtube.com/watch?v=xuG64aZXZtI)
+
+![Gongolierium!](https://raw.githubusercontent.com/kylecorry31/LANN/master/Gongolierium.png)
+
 ## Getting Started
 
 ### Download
 
 Download the .jar file from the [releases page](https://github.com/kylecorry31/LANN/releases) and add it to the build path of your Java project. (Supports JDK 1.6+)
-
-### Projects
-
-#### Gongolierium!
-This project used reinforcement learning (with the genetic algorithm) to learn how to play a game.
-[YouTube](https://www.youtube.com/watch?v=xuG64aZXZtI)
-![Gongolierium!](https://raw.githubusercontent.com/kylecorry31/LANN/master/Gongolierium.png)
 
 ### Example - Hiking Based on Weather
 
