@@ -114,14 +114,34 @@ public class NeuralNetwork {
 		return output.find(max)[0];
 	}
 
+	/**
+	 * Get the weight matrix of a layer of the neural network.
+	 * 
+	 * @param layer
+	 *            The layer number of the neural network.
+	 * @return The weights of the corresponding layer.
+	 */
 	public Matrix getWeights(int layer) {
 		return (Matrix) layers.get(layer).weightMatrix.clone();
 	}
 
+	/**
+	 * Set the weight matrix of a layer of the neural network.
+	 * 
+	 * @param layer
+	 *            The layer number of the neural network.
+	 * @param weights
+	 *            The new weight matrix for the layer.
+	 */
 	public void setWeights(int layer, Matrix weights) {
 		layers.get(layer).weightMatrix = (Matrix) weights.clone();
 	}
 
+	/**
+	 * Get the size of the neural network.
+	 * 
+	 * @return The number of layers in the neural network.
+	 */
 	public int size() {
 		return layers.size();
 	}
@@ -209,6 +229,12 @@ public class NeuralNetwork {
 		}
 	}
 
+	/**
+	 * Loads a neural network from an InputStream.
+	 * 
+	 * @param is
+	 *            The InputStream to retrieve the weights from.
+	 */
 	public void load(InputStream is) {
 		BufferedReader br;
 		try {
@@ -241,7 +267,6 @@ public class NeuralNetwork {
 		}
 	}
 
-	
 	/**
 	 * Loads a neural network from a file.
 	 * 
