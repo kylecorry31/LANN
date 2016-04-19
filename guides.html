@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>LANN</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Raleway' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Source+Code+Pro' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div id="header">
+        <h1>LANN <small>Java</small></h1>
+        <ul class="nav nav-pills nav-justified">
+            <li role="presentation"><a href="index.html">GETTING STARTED</a></li>
+            <li role="presentation" class="active"><a href="#">GUIDES</a></li>
+            <li role="presentation"><a href="tutorials.html">TUTORIALS</a></li>
+            <li role="presentation"><a href="javadocs/index.html">JavaDocs</a></li>
+        </ul>
+    </div>
+    <a href="https://github.com/kylecorry31/LANN"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67"
+            alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
+    <div class="container" id="content">
+        <h1 class="text-center">Guides</h1>
+
+        <h3 class="section-header">Creating a neural network</h3>
+        <hr>
+        <p>
+            The NeuralNetwork class is LANN's representation of a neural network. To create a NeuralNetwork, you must use the NeuralNetwork.Builder class. Below is an example of how to create a simple neural network with 3 input neurons, 1 hidden layer of 2 neurons,
+            and an output layer of 1 neuron.
+        </p>
+        <div class="code">
+            NeuralNetwork net = new NeuralNetwork.Builder()
+            <br> &nbsp;&nbsp;&nbsp;&nbsp;.addLayer(2, 3, new Linear())
+            <br> &nbsp;&nbsp;&nbsp;&nbsp;.addLayer(3, 1, new Sigmoid())
+            <br> &nbsp;&nbsp;&nbsp;&nbsp;.build();
+        </div>
+        <p>
+            You can have as many layers as needed. The function header is:
+        </p>
+        <div class="code">
+            NeuralNetwork.Builder.addLayer(int input, int output, Activation activationFunction)
+        </div>
+        <p>
+            There are several different pre-defined activation functions, all of which are listed below.
+        </p>
+        <div class="code">
+            Binary
+            <br> LeakyReLU
+            <br> Linear
+            <br> ReLU
+            <br> Sigmoid
+            <br> Softmax
+            <br> Softplus
+            <br> Tanh
+        </div>
+        <p>
+            If you are looking to do classification, then the Softmax activation function is the class you are looking to use for the output layer. This will give you a probability distribution of your classes.
+            <br>
+            <br> After creating the neural network, the weights for each neuron will be random, so you will need to train the network to get a useful prediction.
+            <br>
+            <br> You can get the output of the network by using the method shown below.
+        </p>
+        <div class="code">
+            Matrix input = new Matrix(new double[][]{{0.5}, {0.3}});
+            <br> Matrix output = net.predict(input);
+        </div>
+        <p>
+            Notice the use of the Matrix class for representing input and output. You can find out more about this class by reading the Matrix library section of this guide.
+        </p>
+        <h3 class="section-header">Matrix library</h3>
+        <hr>
+        <p>
+            LANN comes bundled with a Matrix library for Java. This library contains a class, Matrix, which represents a <a href="https://en.wikipedia.org/wiki/Matrix_(mathematics)">mathematical matrix</a>.
+            <br>
+            <br> To create a Matrix object, you can use one of the following methods.
+        </p>
+        <div class="code">
+            Matrix matA = new Matrix(10, 8); // Creates a 10 by 8 matrix (10 rows, 8 columns) filled with 0s.
+            <br> Matrix matB = new Matrix (10, 8, 0.1); // Creates a 10 by 8 matrix (10 rows, 8 columns) filled with 0.1 in each position.
+            <br> Matrix matC = new Matrix(new double[][]{{1.2, 4}, {5, 9}, {0.1, -0.8}}); // Creates a 3 by 2 matrix (3 rows, 2 columns) of user defined values.
+        </div>
+        <p>
+            You can also do some fancy calculations with the matrices.
+        </p>
+        <div class="code">
+            Matrix matATrans = matA.transpose();
+            <br> Matrix matAMultiply = matA.multiply(matB);
+            <br> Matrix matBSubtract = matB.subtract(matA);
+            <br> Matrix matBScalarSubtr = matB.subtract(5);
+            <br> Matrix matCScalarMult = matC.multiply(6);
+            <br> Matrix matBDot = matB.dot(matATrans);
+            <br> Matrix oneHotC = matC.oneHot();
+            <br> Matrix normC = matC.normalize();
+            <br> double max = matC.max();
+            <br> double min = matA.min();
+            <br> int[] rowColOf5 = matC.find(5);
+            <br> Matrix applyFunctionA = matA.map(new Matrix.Function(){
+            <br> &nbsp;&nbsp;&nbsp;&nbsp;@Override
+            <br> &nbsp;&nbsp;&nbsp;&nbsp;public double function(double x) {
+            <br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return Math.abs(x);
+            <br> &nbsp;&nbsp;&nbsp;&nbsp;}
+            <br> });
+        </div>
+        <p>
+            LANN includes this matrix library because all of the input and outputs into the NeuraNetwork object will be Matrix objects.
+            <br>
+            <br> To use this library seperately, you can download it from <a href="https://github.com/kylecorry31/Matrix">GitHub</a>.
+        </p>
+        <h3 class="section-header">Training a neural network</h3>
+        <hr>
+        <h4 class="section-subhead">Supervised</h4>
+        <h4 class="section-subhead">Reinforcement</h4>
+        <h3 class="section-header">Using a neural network</h3>
+        <hr>
+        <h3 class="section-header">Saving a neural network</h3>
+        <hr>
+        <h3 class="section-header">Loading a neural network</h3>
+        <hr>
+        <h3 class="section-header">Custom activation functions</h3>
+        <hr>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,96 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    font-family: 'Open Sans', sans-serif;
+}
+#header {
+    width: 100%;
+    min-height: 20vh;
+    background-color: #0BB12B;
+}
+#header h1 {
+    color: white;
+    margin: 0;
+    text-align: center;
+    height: 20vh;
+    line-height: 20vh;
+    font-size: 64px;
+    vertical-align: middle;
+    font-family: 'Raleway', sans-serif;
+}
+#header h1 small {
+    color: rgb(227, 227, 227);
+    font-size: 32px;
+}
+.nav {
+    margin-bottom: 5px !important;
+    box-shadow: 0 2px 4px #888888;
+}
+.nav li {
+    border-radius: 0;
+    box-sizing: border-box;
+}
+.nav li a {
+    text-transform: uppercase;
+    text-decoration: none;
+    font-weight: 100;
+    padding: 32px !important;
+    width: 100%;
+    color: rgb(227, 227, 227);
+    font-size: 16px;
+}
+.nav li a:hover {
+    color: white;
+    background-color: inherit !important;
+}
+.active a {
+    color: white !important;
+    background-color: inherit !important;
+}
+.ghost {
+    text-decoration: none;
+    display: inline-block;
+    padding: 11.25px 15px 10.5px 15px;
+    outline: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    -ms-appearance: none;
+    -o-appearance: none;
+    appearance: none;
+    border-radius: 2px;
+    font-family: 'Roboto', Helvetica, sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-weight: 400;
+    background: transparent;
+    border: 1px solid #0BB12B;
+    color: #0BB12B;
+    -webkit-transition: all 0.5s ease;
+    transition: all 0.5s ease;
+}
+.ghost:hover {
+    background: #0BB12B;
+    color: #fff;
+    text-decoration: none;
+}
+.section-header {
+  font-weight: bold;
+}
+.section-subhead {
+  font-weight: bold;
+}
+p {
+  font-size: 18px;
+  text-align: justify;
+}
+.code {
+    background-color: rgb(227, 227, 227);
+    border-radius: 2px;
+    padding: 32px;
+    font-size: 18px;
+    font-family: 'Source Code Pro', sans-serif;
+    margin-top: 32px;
+    margin-bottom: 32px;
+}
