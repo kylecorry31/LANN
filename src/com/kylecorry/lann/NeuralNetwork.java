@@ -236,10 +236,23 @@ public class NeuralNetwork {
 	 *            The InputStream to retrieve the weights from.
 	 */
 	public void load(InputStream is) {
-		BufferedReader br;
 		try {
-			br = new BufferedReader(new InputStreamReader(is, "utf-8"));
+			BufferedReader br = new BufferedReader(new InputStreamReader(is, "utf-8"));
+			loadFromBufferedReader(br);
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
 
+	}
+
+	/**
+	 * Loads a neural network from a BufferedReader.
+	 * 
+	 * @param br
+	 *            The buffered reader to retrieve the weights from.
+	 */
+	private void loadFromBufferedReader(BufferedReader br) {
+		try {
 			StringBuilder sb = new StringBuilder();
 			String line = br.readLine();
 
@@ -274,35 +287,13 @@ public class NeuralNetwork {
 	 *            The file to retrieve the weights from.
 	 */
 	public void load(File file) {
-		BufferedReader br;
 		try {
-			br = new BufferedReader(new FileReader(file));
-
-			StringBuilder sb = new StringBuilder();
-			String line = br.readLine();
-
-			while (line != null) {
-				sb.append(line);
-				sb.append(System.lineSeparator());
-				line = br.readLine();
-			}
-			br.close();
-			String everything = sb.toString();
-			String[] strLayers = everything.split("\n");
-			for (int i = 0; i < strLayers.length; i++) {
-				String[] rows = strLayers[i].split("\\]\\[");
-				for (int r = 0; r < rows.length; r++) {
-					String[] cols = rows[r].replace("[", "").replace("]", "").split(", ");
-					for (int c = 0; c < cols.length; c++) {
-						layers.get(i).weightMatrix.set(r, c, Double.parseDouble(cols[c]));
-					}
-				}
-			}
+			BufferedReader br = new BufferedReader(new FileReader(file));
+			loadFromBufferedReader(br);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
+
 	}
 
 	/**
@@ -312,35 +303,13 @@ public class NeuralNetwork {
 	 *            The name of the file to retrieve the weights from.
 	 */
 	public void load(String filename) {
-		BufferedReader br;
 		try {
-			br = new BufferedReader(new FileReader(filename));
-
-			StringBuilder sb = new StringBuilder();
-			String line = br.readLine();
-
-			while (line != null) {
-				sb.append(line);
-				sb.append(System.lineSeparator());
-				line = br.readLine();
-			}
-			br.close();
-			String everything = sb.toString();
-			String[] strLayers = everything.split("\n");
-			for (int i = 0; i < strLayers.length; i++) {
-				String[] rows = strLayers[i].split("\\]\\[");
-				for (int r = 0; r < rows.length; r++) {
-					String[] cols = rows[r].replace("[", "").replace("]", "").split(", ");
-					for (int c = 0; c < cols.length; c++) {
-						layers.get(i).weightMatrix.set(r, c, Double.parseDouble(cols[c]));
-					}
-				}
-			}
+			BufferedReader br = new BufferedReader(new FileReader(filename));
+			loadFromBufferedReader(br);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
+
 	}
 
 	/**
@@ -449,20 +418,35 @@ public class NeuralNetwork {
 
 		private Matrix applyFunctionDerivative(Matrix input) {
 			Matrix activated = (Matrix) input.clone();
-			for (int row = 0; row < input.getNumRows(); row++)
-				for (int col = 0; col < input.getNumCols(); col++) {
-					if (function instanceof Softmax)
-						activated.set(row, col, Math.pow(Math.E, input.get(row, col)));
-					else
-						activated.set(row, col, function.derivative(input.get(row, col)));
-				}
+			if (function instanceof Softmax)
+				activated.map(new Matrix.Function() {
+
+					@Override
+					public double function(double x) {
+						return Math.exp(x);
+					}
+				});
+			else
+				activated.map(new Matrix.Function() {
+
+					@Override
+					public double function(double x) {
+						return function.derivative(x);
+					}
+				});
+
 			if (function instanceof Softmax) {
 				double sum = activated.sum();
 				if (sum != 0)
 					activated = activated.multiply(1 / sum);
-				for (int row = 0; row < input.getNumRows(); row++)
-					for (int col = 0; col < input.getNumCols(); col++)
-						activated.set(row, col, function.activate(activated.get(row, col)) - input.get(row, col));
+				activated.subtract(input);
+				activated.map(new Matrix.Function() {
+
+					@Override
+					public double function(double x) {
+						return function.activate(x);
+					}
+				});
 			}
 			return activated;
 		}
