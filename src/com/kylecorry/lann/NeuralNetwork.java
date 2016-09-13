@@ -410,16 +410,19 @@ public class NeuralNetwork {
 
 		private Matrix createRandomMatrix(int rows, int cols) {
 			Matrix random = new Matrix(rows, cols);
-			for (int row = 0; row < rows; row++)
-				for (int col = 0; col < cols; col++)
-					random.set(row, col, Math.random());
-			return random;
+			return random.map(new Matrix.Function() {
+
+				@Override
+				public double function(double x) {
+					return Math.random();
+				}
+			});
 		}
 
 		private Matrix applyFunctionDerivative(Matrix input) {
 			Matrix activated = (Matrix) input.clone();
 			if (function instanceof Softmax)
-				activated.map(new Matrix.Function() {
+				activated = activated.map(new Matrix.Function() {
 
 					@Override
 					public double function(double x) {
@@ -427,7 +430,7 @@ public class NeuralNetwork {
 					}
 				});
 			else
-				activated.map(new Matrix.Function() {
+				activated = activated.map(new Matrix.Function() {
 
 					@Override
 					public double function(double x) {
@@ -439,8 +442,8 @@ public class NeuralNetwork {
 				double sum = activated.sum();
 				if (sum != 0)
 					activated = activated.multiply(1 / sum);
-				activated.subtract(input);
-				activated.map(new Matrix.Function() {
+				activated = activated.subtract(input);
+				activated = activated.map(new Matrix.Function() {
 
 					@Override
 					public double function(double x) {
