@@ -7,8 +7,12 @@ sourceCompatibility = 1.5
 
 repositories {
     mavenCentral()
+    flatDir {
+        dirs 'libs'
+    }
 }
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
+    compile name: 'Matrix-1.0'
 }
