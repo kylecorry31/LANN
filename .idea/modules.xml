@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/LANN.iml" filepath="$PROJECT_DIR$/.idea/modules/LANN.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/LANN_main.iml" filepath="$PROJECT_DIR$/.idea/modules/LANN_main.iml" group="LANN" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/LANN_test.iml" filepath="$PROJECT_DIR$/.idea/modules/LANN_test.iml" group="LANN" />
+    </modules>
+  </component>
+</project>
