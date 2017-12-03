@@ -11,7 +11,42 @@ This library is under active development, and some classes may change.
 To install this library into your program, just include this jar from the releases page in your build path.
 
 ## Usage
-This section is a stub. More on usage will be added soon.
+### Create a neural network
+```java
+// Create a neural network with a Sigmoid input layer and Softmax output layer (input size = 2, hidden size = 4, output size = 3)
+PersistentMachineLearningAlgorithm testNet = new NN.Builder()
+        .addLayer(2, 4, new Sigmoid())
+        .addLayer(4, 3, new Softmax())
+        .build();
+```
+
+### Train a neural network
+```java
+// testNet: input size = 2, output size = 3
+
+Matrix[] inputData = new Matrix[]{new Matrix(100d, 2d), new Matrix(0d, 10d)};
+Matrix[] outputData = new Matrix[]{new Matrix(1d, 0d, 0d), new Matrix(0d, 1d, 0d)};
+
+testNet.fit(inputData, outputData);
+```
+
+### Predict with a neural network
+```java
+// testNet: input size = 2, output size = 3
+Matrix prediction = testNet.predict(100d, 2d);
+```
+
+### Use a neural network as a classifier
+```java
+// testNet: input size = 2, output size = 3, output layer = Softmax
+
+// Create the classifier from a network
+IClassifier<String> classifier = new Classifier<>(testNet, new String[]{"One", "Two", "Three"});
+
+// Predict the class of the input
+String classification = classifier.classify(new Matrix(100d, 2d)).getClassification();
+```
+
 
 ## Contributing
 Please fork this repo and submit a pull request to contribute. I will review all changes and respond if they are accepted or rejected (as well as reasons, so it will be accepted).
