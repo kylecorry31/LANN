@@ -16,8 +16,8 @@ public class Examples {
         PersistentMachineLearningAlgorithm testNet = new NN.Builder().addLayer(2, 4, new Sigmoid())
                 .addLayer(4, 3, new Softmax()).build();
 
-        Matrix[] input = new Matrix[]{new Matrix(100d, 2d), new Matrix(0d, 10d)};
-        Matrix[] output = new Matrix[]{new Matrix(1d, 0d, 0d), new Matrix(0d, 1d, 0d)};
+        Matrix[] input = {new Matrix(100d, 2d), new Matrix(0d, 10d)};
+        Matrix[] output = {new Matrix(1d, 0d, 0d), new Matrix(0d, 1d, 0d)};
 
         testNet.fit(input, output);
 
@@ -31,8 +31,8 @@ public class Examples {
         PersistentMachineLearningAlgorithm testNet = new NN.Builder().addLayer(2, 4, new Sigmoid())
                 .addLayer(4, 3, new Softmax()).build();
 
-        Matrix[] input = new Matrix[]{new Matrix(100d, 2d), new Matrix(0d, 10d)};
-        Matrix[] output = new Matrix[]{new Matrix(0d, 1d, 0d), new Matrix(0d, 1d, 0d)};
+        Matrix[] input = {new Matrix(100d, 2d), new Matrix(0d, 10d)};
+        Matrix[] output = {new Matrix(0d, 1d, 0d), new Matrix(0d, 1d, 0d)};
 
         testNet.fit(input, output);
 

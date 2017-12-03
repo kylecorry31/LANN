@@ -24,8 +24,8 @@ PersistentMachineLearningAlgorithm testNet = new NN.Builder()
 ```java
 // testNet: input size = 2, output size = 3
 
-Matrix[] inputData = new Matrix[]{new Matrix(100d, 2d), new Matrix(0d, 10d)};
-Matrix[] outputData = new Matrix[]{new Matrix(1d, 0d, 0d), new Matrix(0d, 1d, 0d)};
+Matrix[] inputData = {new Matrix(100d, 2d), new Matrix(0d, 10d)};
+Matrix[] outputData = {new Matrix(1d, 0d, 0d), new Matrix(0d, 1d, 0d)};
 
 testNet.fit(inputData, outputData);
 ```
