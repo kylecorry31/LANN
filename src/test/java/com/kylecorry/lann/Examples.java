@@ -13,7 +13,7 @@ import static org.junit.Assert.assertEquals;
 public class Examples {
     @Test
     public void testNN() {
-        PersistentMachineLearningAlgorithm testNet = new NN.Builder().addLayer(2, 4, new Sigmoid())
+        PersistentMachineLearningAlgorithm testNet = new NeuralNetwork.Builder().addLayer(2, 4, new Sigmoid())
                 .addLayer(4, 3, new Softmax()).build();
 
         Matrix[] input = {new Matrix(100d, 2d), new Matrix(0d, 10d)};
@@ -28,7 +28,7 @@ public class Examples {
 
     @Test
     public void testClassifier() {
-        PersistentMachineLearningAlgorithm testNet = new NN.Builder().addLayer(2, 4, new Sigmoid())
+        PersistentMachineLearningAlgorithm testNet = new NeuralNetwork.Builder().addLayer(2, 4, new Sigmoid())
                 .addLayer(4, 3, new Softmax()).build();
 
         Matrix[] input = {new Matrix(100d, 2d), new Matrix(0d, 10d)};

@@ -17,7 +17,7 @@ public class GeneticTrainer {
 			boolean keepBest) {
 		genes = new ArrayList<Gene>();
 		for (int i = 0; i < numGenes; i++) {
-			NN.Builder netBuilder = new NN.Builder();
+			NeuralNetwork.Builder netBuilder = new NeuralNetwork.Builder();
 			for (int t = 1; t < topology.length; t++) {
 				if (t == 1)
 					netBuilder.addLayer(topology[t - 1], topology[t], new Linear());
@@ -34,15 +34,15 @@ public class GeneticTrainer {
 	}
 
 	public static class Gene {
-		private NN network;
+		private NeuralNetwork network;
 		private double fitness;
 
-		public Gene(NN nn, double fit) {
+		public Gene(NeuralNetwork nn, double fit) {
 			fitness = fit;
 			network = nn;
 		}
 
-		public NN getNeuralNetwork() {
+		public NeuralNetwork getNeuralNetwork() {
 			return network;
 		}
 
